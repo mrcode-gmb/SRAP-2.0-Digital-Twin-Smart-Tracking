@@ -63,7 +63,7 @@ function Sidebar({ isOpen, onClose, user }) {
         { name: 'SRAP Pillars', href: '/srap-pillars', icon: Layers },
         
         // AI & Analytics
-        { name: 'AI Predictions', href: '/ai-predictions', icon: Brain },
+        { name: 'AI Predictions', href: '/admin/ai-predictions', icon: Brain },
         { name: 'Analytics', href: '/dashboard/analyst/analytics', icon: TrendingUp },
         
         // Admin Features

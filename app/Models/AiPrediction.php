@@ -14,11 +14,15 @@ class AiPrediction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'kpi_id',
+        'user_id',
         'prediction_type',
         'target_type',
         'target_id',
         'input_data',
         'prediction_result',
+        'risk_score',
+        'risk_level',
         'confidence_score',
         'prediction_date',
         'forecast_period_start',
@@ -27,7 +31,8 @@ class AiPrediction extends Model
         'parameters',
         'status',
         'notes',
-        'requested_by'
+        'requested_by',
+        'file_path'
     ];
 
     protected $casts = [
@@ -35,12 +40,23 @@ class AiPrediction extends Model
         'prediction_result' => 'array',
         'parameters' => 'array',
         'confidence_score' => 'decimal:2',
+        'risk_score' => 'decimal:2',
         'prediction_date' => 'date',
         'forecast_period_start' => 'date',
         'forecast_period_end' => 'date',
     ];
 
-    public function requester(): BelongsTo
+    public function kpi(): BelongsTo
+    {
+        return $this->belongsTo(Kpis::class, 'kpi_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function requestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by');
     }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('target_type'); // 'kpi', 'pillar', 'overall'
             $table->unsignedBigInteger('target_id')->nullable();
             $table->json('input_data'); // Historical data used for prediction
-            $table->json('prediction_result'); // AI model output
+            $table->json('prediction_result')->nullable(); // AI model output
             $table->decimal('confidence_score', 5, 2)->nullable();
             $table->date('prediction_date');
             $table->date('forecast_period_start')->nullable();

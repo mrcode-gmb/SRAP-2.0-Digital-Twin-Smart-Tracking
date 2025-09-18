@@ -132,6 +132,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('scenarios/simulate', [ScenarioSimulationController::class, 'simulate'])->name('scenarios.simulate');
         Route::post('scenarios/compare', [ScenarioSimulationController::class, 'compare'])->name('scenarios.compare');
         Route::get('scenarios/{simulation}/export/{format?}', [ScenarioSimulationController::class, 'export'])->name('scenarios.export');
+        
+        Route::resource('ai-predictions', \App\Http\Controllers\Admin\AiPredictionController::class);
+        Route::post('ai-predictions/bulk', [\App\Http\Controllers\Admin\AiPredictionController::class, 'bulkPredict'])->name('ai-predictions.bulk');
+        Route::get('ai-predictions/template', [\App\Http\Controllers\Admin\AiPredictionController::class, 'downloadTemplate'])->name('ai-predictions.template');
+        Route::get('ai-predictions/export', [\App\Http\Controllers\Admin\AiPredictionController::class, 'export'])->name('ai-predictions.export');
     });
 });
 

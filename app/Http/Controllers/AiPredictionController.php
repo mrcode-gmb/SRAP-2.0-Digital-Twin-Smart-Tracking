@@ -106,6 +106,8 @@ class AiPredictionController extends Controller
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
         ]);
 
+
+        
         try {
             $file = $request->file('file');
             $predictions = $this->processBulkFile($file);

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('filename');
             $table->string('original_filename');
             $table->string('file_path');
-            $table->string('file_type'); // kpi_progress, milestone_progress
+            $table->string('file_type')->nullable(); // kpi_progress, milestone_progress
             $table->string('mime_type');
             $table->bigInteger('file_size');
             $table->enum('status', ['pending', 'processing', 'completed', 'failed'])->default('pending');

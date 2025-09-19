@@ -121,7 +121,6 @@ class AiPredictionController extends Controller
                 throw new \Exception('AI prediction service unavailable');
             }
 
-            return $response;
             // Flask API now returns JSON like: {"predicted_risk": "High", "status": "success"}
             $responseData = $response->json();
 

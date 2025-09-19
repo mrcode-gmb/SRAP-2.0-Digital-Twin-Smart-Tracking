@@ -79,8 +79,11 @@ class MilestoneController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        // return $request;
+        $request->validate([
             'title' => 'required|string|max:255',
+        ]);
+        $validated = $request->validate([
             'description' => 'required|string',
             'kpi_id' => 'required|exists:kpis,id',
             'assigned_to' => 'nullable|exists:users,id',
@@ -95,6 +98,7 @@ class MilestoneController extends Controller
 
         $milestone = Milestone::create([
             ...$validated,
+            'name'=>$request->title,
             'created_by' => Auth::id()
         ]);
 

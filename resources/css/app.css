@@ -2,6 +2,13 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* Critical CSS for faster initial render */
+@layer base {
+  html {
+    font-display: swap;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

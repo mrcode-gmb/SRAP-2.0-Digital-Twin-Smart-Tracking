@@ -15,7 +15,7 @@ use Carbon\Carbon;
 
 class AiPredictionController extends Controller
 {
-    private $flaskApiUrl = 'http://127.0.0.1:5000'; // Flask API URL
+    private $flaskApiUrl = 'https://aqtris.com/smart-tracking'; // Flask API URL
 
     /**
      * Display AI prediction dashboard

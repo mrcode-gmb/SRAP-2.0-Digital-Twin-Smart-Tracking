@@ -16,23 +16,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Com
 import { Button } from '@/Components/ui/Button';
 import { Badge } from '@/Components/ui/Badge';
 
-export default function KPICreate({ pillars, departments, users }) {
+export default function KPICreate({ pillars, initiatives, departments, users }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
+        code: '',
         description: '',
         pillar_id: '',
+        initiative_id: '',
         department_id: '',
         assigned_to: '',
+        measurement_type: '',
         target_value: '',
-        current_value: '0',
+        current_value: '',
         unit: '',
-        target_date: '',
         frequency: 'monthly',
-        calculation_method: '',
-        data_source: '',
-        baseline_value: '',
-        baseline_date: '',
+        start_date: '',
+        end_date: '',
+        priority: '2',
         weight: '1',
+        status: 'not_started',
+        baseline_date: '',
+        baseline_value: '',
         is_active: true
     });
 
@@ -44,6 +48,7 @@ export default function KPICreate({ pillars, departments, users }) {
                 router.visit('/kpis');
             },
             onError: (errors) => {
+                console.log(errors);
                 toast.error('Failed to create KPI. Please check the form for errors.');
             }
         });
@@ -124,6 +129,23 @@ export default function KPICreate({ pillars, departments, users }) {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        KPI Code *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.code}
+                                        onChange={(e) => setData('code', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="e.g., KPI_001"
+                                        required
+                                    />
+                                    {errors.code && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.code}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Description *
                                     </label>
                                     <textarea
@@ -164,25 +186,46 @@ export default function KPICreate({ pillars, departments, users }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Department *
+                                            Initiative (Optional)
                                         </label>
                                         <select
-                                            value={data.department_id}
-                                            onChange={(e) => setData('department_id', e.target.value)}
+                                            value={data.initiative_id}
+                                            onChange={(e) => setData('initiative_id', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            required
                                         >
-                                            <option value="">Select a department</option>
-                                            {departments?.map(dept => (
-                                                <option key={dept.id} value={dept.id}>
-                                                    {dept.name}
+                                            <option value="">Select an initiative</option>
+                                            {initiatives?.filter(init => !data.pillar_id || init.pillar_id == data.pillar_id).map(initiative => (
+                                                <option key={initiative.id} value={initiative.id}>
+                                                    {initiative.name}
                                                 </option>
                                             ))}
                                         </select>
-                                        {errors.department_id && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.department_id}</p>
+                                        {errors.initiative_id && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.initiative_id}</p>
                                         )}
                                     </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Department *
+                                    </label>
+                                    <select
+                                        value={data.department_id}
+                                        onChange={(e) => setData('department_id', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        required
+                                    >
+                                        <option value="">Select a department</option>
+                                        {departments?.map(dept => (
+                                            <option key={dept.id} value={dept.id}>
+                                                {dept.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.department_id && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.department_id}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -226,6 +269,27 @@ export default function KPICreate({ pillars, departments, users }) {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Measurement Type *
+                                    </label>
+                                    <select
+                                        value={data.measurement_type}
+                                        onChange={(e) => setData('measurement_type', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        required
+                                    >
+                                        <option value="">Select measurement type</option>
+                                        <option value="percentage">Percentage (%)</option>
+                                        <option value="number">Number/Count</option>
+                                        <option value="currency">Currency (₦)</option>
+                                        <option value="ratio">Ratio</option>
+                                    </select>
+                                    {errors.measurement_type && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.measurement_type}</p>
+                                    )}
+                                </div>
+
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -279,43 +343,78 @@ export default function KPICreate({ pillars, departments, users }) {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Target Date *
+                                            Start Date *
                                         </label>
                                         <input
                                             type="date"
-                                            value={data.target_date}
-                                            onChange={(e) => setData('target_date', e.target.value)}
+                                            value={data.start_date}
+                                            onChange={(e) => setData('start_date', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             required
                                         />
-                                        {errors.target_date && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.target_date}</p>
+                                        {errors.start_date && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.start_date}</p>
                                         )}
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Measurement Frequency *
+                                            End Date *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={data.end_date}
+                                            onChange={(e) => setData('end_date', e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            required
+                                        />
+                                        {errors.end_date && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.end_date}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Priority *
                                         </label>
                                         <select
-                                            value={data.frequency}
-                                            onChange={(e) => setData('frequency', e.target.value)}
+                                            value={data.priority}
+                                            onChange={(e) => setData('priority', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             required
                                         >
-                                            <option value="daily">Daily</option>
-                                            <option value="weekly">Weekly</option>
-                                            <option value="monthly">Monthly</option>
-                                            <option value="quarterly">Quarterly</option>
-                                            <option value="annually">Annually</option>
+                                            <option value="1">High Priority</option>
+                                            <option value="2">Medium Priority</option>
+                                            <option value="3">Low Priority</option>
                                         </select>
-                                        {errors.frequency && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.frequency}</p>
+                                        {errors.priority && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.priority}</p>
                                         )}
                                     </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Measurement Frequency *
+                                    </label>
+                                    <select
+                                        value={data.frequency}
+                                        onChange={(e) => setData('frequency', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        required
+                                    >
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                        <option value="quarterly">Quarterly</option>
+                                        <option value="annually">Annually</option>
+                                    </select>
+                                    {errors.frequency && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.frequency}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -353,7 +452,7 @@ export default function KPICreate({ pillars, departments, users }) {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Baseline Value
+                                            Baseline Value *
                                         </label>
                                         <input
                                             type="number"
@@ -361,6 +460,7 @@ export default function KPICreate({ pillars, departments, users }) {
                                             value={data.baseline_value}
                                             onChange={(e) => setData('baseline_value', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            required
                                         />
                                         {errors.baseline_value && (
                                             <p className="mt-1 text-sm text-red-600">{errors.baseline_value}</p>
@@ -369,13 +469,14 @@ export default function KPICreate({ pillars, departments, users }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Baseline Date
+                                            Baseline Date *
                                         </label>
                                         <input
                                             type="date"
                                             value={data.baseline_date}
                                             onChange={(e) => setData('baseline_date', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            required
                                         />
                                         {errors.baseline_date && (
                                             <p className="mt-1 text-sm text-red-600">{errors.baseline_date}</p>

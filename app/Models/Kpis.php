@@ -28,11 +28,14 @@ class Kpis extends Model
         'code',
         'description',
         'pillar_id',
+        'initiative_id',
         'department_id',
         'assigned_to',
         'measurement_type',
         'target_value',
         'current_value',
+        'baseline_value',
+        'baseline_date',
         'unit',
         'frequency',
         'start_date',
@@ -48,16 +51,23 @@ class Kpis extends Model
     protected $casts = [
         'target_value' => 'decimal:2',
         'current_value' => 'decimal:2',
+        'baseline_value' => 'decimal:2',
         'weight' => 'decimal:2',
         'metadata' => 'array',
         'is_active' => 'boolean',
         'start_date' => 'date',
         'end_date' => 'date',
+        'baseline_date' => 'date',
     ];
 
     public function pillar(): BelongsTo
     {
         return $this->belongsTo(SrapPillar::class, 'pillar_id');
+    }
+
+    public function initiative(): BelongsTo
+    {
+        return $this->belongsTo(Initiative::class, 'initiative_id');
     }
 
     public function department(): BelongsTo

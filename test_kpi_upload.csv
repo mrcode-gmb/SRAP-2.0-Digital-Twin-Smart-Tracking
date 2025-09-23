@@ -1,0 +1,5 @@
+KPI ID,KPI Title,Reporting Date,Current Value,Notes,Entry Type,Source
+1,National Broadband Coverage,2024-09-23,47.5,Updated coverage data from field survey,upload,excel_upload
+2,Fiber Optic Cable Deployment,2024-09-23,35000,New fiber installations completed,upload,excel_upload
+3,5G Base Stations Deployed,2024-09-23,1350,Additional base stations activated,upload,excel_upload
+4,Citizens Trained in Digital Skills,2024-09-23,3750000,Monthly training program results,upload,excel_upload

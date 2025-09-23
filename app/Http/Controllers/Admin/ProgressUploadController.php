@@ -106,6 +106,7 @@ class ProgressUploadController extends Controller
             )->with('upload_results', $results);
 
         } catch (\Exception $e) {
+            
             DB::rollBack();
             
             // Update file status to failed if it was created
@@ -233,6 +234,11 @@ class ProgressUploadController extends Controller
         
         $headers = array_shift($data); // Remove header row
         
+        // Clean and filter out empty headers
+        $headers = array_filter(array_map('trim', $headers), function($header) {
+            return !empty($header);
+        });
+        
         // Validate headers before processing
         $this->validateFileHeaders($headers, $type);
         
@@ -275,17 +281,24 @@ class ProgressUploadController extends Controller
      */
     private function validateFileHeaders($headers, $type)
     {
+        // Clean headers - remove extra spaces and normalize
+        $cleanHeaders = array_map(function($header) {
+            return trim($header);
+        }, $headers);
+        
         $requiredHeaders = $this->getRequiredHeaders($type);
         $missingHeaders = [];
         
         foreach ($requiredHeaders as $requiredHeader) {
-            if (!in_array($requiredHeader, $headers)) {
+            if (!in_array($requiredHeader, $cleanHeaders)) {
                 $missingHeaders[] = $requiredHeader;
             }
         }
         
         if (!empty($missingHeaders)) {
-            throw new \Exception('Missing required columns: ' . implode(', ', $missingHeaders) . '. Please download and use the correct template.');
+            // Add debugging information
+            $foundHeaders = implode(', ', $cleanHeaders);
+            throw new \Exception("Missing required columns: " . implode(', ', $missingHeaders) . ". Found headers: [{$foundHeaders}]. Please download and use the correct template.");
         }
     }
 
@@ -300,8 +313,17 @@ class ProgressUploadController extends Controller
         $reportingDate = $row[$headerMap['Reporting Date']] ?? null;
         $currentValue = $row[$headerMap['Current Value']] ?? null;
         $notes = $row[$headerMap['Notes']] ?? '';
-        $entryType = $row[$headerMap['Entry Type']] ?? 'manual';
+        $entryType = $row[$headerMap['Entry Type']] ?? 'upload';
+        
+        // Validate entry type against allowed values
+        $validEntryTypes = ['manual', 'upload', 'api', 'system'];
+        if (!in_array($entryType, $validEntryTypes)) {
+            $entryType = 'upload'; // Default to upload for file uploads
+        }
         $source = $row[$headerMap['Source']] ?? 'excel_upload';
+        
+        // Add approval status for workflow
+        $needsApproval = Auth::user()->role === 'data_officer';
 
         // Validate required fields
         if (!$kpiId || !$reportingDate || $currentValue === null) {
@@ -335,9 +357,12 @@ class ProgressUploadController extends Controller
             'entry_type' => $entryType,
             'source' => $source,
             'reported_by' => Auth::id(),
+            'verified_by' => $needsApproval ? null : Auth::id(), // Auto-approve for non-data officers
+            'verification_status' => $needsApproval ? 'pending' : 'verified',
             'metadata' => [
                 'uploaded_via' => 'excel',
-                'upload_timestamp' => now()->toISOString()
+                'upload_timestamp' => now()->toISOString(),
+                'needs_approval' => $needsApproval
             ]
         ];
 
@@ -347,13 +372,16 @@ class ProgressUploadController extends Controller
             KpiProgress::create($progressData);
         }
 
-        // Update KPI current value if this is the latest entry
-        $latestProgress = KpiProgress::where('kpi_id', $kpiId)
-            ->orderBy('reporting_date', 'desc')
-            ->first();
+        // Only update KPI current value if the entry is verified (not pending)
+        if (!$needsApproval) {
+            $latestProgress = KpiProgress::where('kpi_id', $kpiId)
+                ->where('verification_status', 'verified')
+                ->orderBy('reporting_date', 'desc')
+                ->first();
 
-        if ($latestProgress && $latestProgress->reporting_date->isSameDay($reportingDate)) {
-            $kpi->update(['current_value' => $currentValue]);
+            if ($latestProgress && $latestProgress->reporting_date->isSameDay($reportingDate)) {
+                $kpi->update(['current_value' => $currentValue]);
+            }
         }
     }
 
@@ -426,8 +454,8 @@ class ProgressUploadController extends Controller
         if ($type === 'kpi_progress') {
             $templateData = [
                 ['KPI ID', 'KPI Title', 'Reporting Date', 'Current Value', 'Notes', 'Entry Type', 'Source'],
-                ['1', 'Sample KPI', '2024-01-15', '75', 'Sample progress note', 'manual', 'excel_upload'],
-                ['2', 'Another KPI', '2024-01-15', '82.5', 'Another sample note', 'automated', 'system']
+                ['1', 'Sample KPI', '2024-01-15', '75', 'Sample progress note', 'upload', 'excel_upload'],
+                ['2', 'Another KPI', '2024-01-15', '82.5', 'Another sample note', 'upload', 'excel_upload']
             ];
         } else {
             $templateData = [
@@ -552,5 +580,102 @@ class ProgressUploadController extends Controller
         } else {
             return ['Milestone ID', 'Completion Percentage'];
         }
+    }
+
+    /**
+     * Approve KPI progress entry (for HOD role)
+     */
+    public function approveProgress(Request $request, $progressId)
+    {
+        $user = Auth::user();
+        
+        // Check if user has approval rights
+        if (!in_array($user->role, ['hod', 'admin'])) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $progress = KpiProgress::findOrFail($progressId);
+        
+        // Check if user can approve this progress (same department or admin)
+        if ($user->role === 'hod' && $progress->kpi->department_id !== $user->department_id) {
+            return response()->json(['error' => 'Can only approve progress for your department'], 403);
+        }
+
+        $progress->update([
+            'verified_by' => $user->id,
+            'verification_status' => 'verified',
+            'verified_at' => now()
+        ]);
+
+        // Update KPI current value if this is the latest verified entry
+        $latestProgress = KpiProgress::where('kpi_id', $progress->kpi_id)
+            ->where('verification_status', 'verified')
+            ->orderBy('reporting_date', 'desc')
+            ->first();
+
+        if ($latestProgress && $latestProgress->id === $progress->id) {
+            $progress->kpi->update(['current_value' => $progress->value]);
+        }
+
+        return response()->json(['message' => 'Progress approved successfully']);
+    }
+
+    /**
+     * Reject KPI progress entry
+     */
+    public function rejectProgress(Request $request, $progressId)
+    {
+        $user = Auth::user();
+        
+        // Check if user has approval rights
+        if (!in_array($user->role, ['hod', 'admin'])) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'rejection_reason' => 'required|string|max:500'
+        ]);
+
+        $progress = KpiProgress::findOrFail($progressId);
+        
+        // Check if user can reject this progress (same department or admin)
+        if ($user->role === 'hod' && $progress->kpi->department_id !== $user->department_id) {
+            return response()->json(['error' => 'Can only reject progress for your department'], 403);
+        }
+
+        $progress->update([
+            'verified_by' => $user->id,
+            'verification_status' => 'rejected',
+            'verified_at' => now(),
+            'rejection_reason' => $validated['rejection_reason']
+        ]);
+
+        return response()->json(['message' => 'Progress rejected successfully']);
+    }
+
+    /**
+     * Get pending approvals for HOD
+     */
+    public function getPendingApprovals()
+    {
+        $user = Auth::user();
+        
+        if (!in_array($user->role, ['hod', 'admin'])) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $query = KpiProgress::with(['kpi', 'reportedBy'])
+            ->where('verification_status', 'pending');
+
+        // Filter by department for HOD
+        if ($user->role === 'hod') {
+            $query->whereHas('kpi', function($q) use ($user) {
+                $q->where('department_id', $user->department_id);
+            });
+        }
+
+        $pendingApprovals = $query->orderBy('created_at', 'desc')->paginate(15);
+
+        return response()->json($pendingApprovals);
     }
 }

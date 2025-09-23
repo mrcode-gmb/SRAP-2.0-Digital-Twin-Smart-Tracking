@@ -93,6 +93,20 @@ function Sidebar({ isOpen, onClose, user }) {
             { name: 'AI Chatbot', href: '/dashboard/ai/chatbot', icon: Bot },
             { name: 'AI Models', href: '/dashboard/ai/models', icon: Database },
         ] : []),
+        
+        // Data Officer Features
+        ...(user.role === 'data_officer' ? [
+            { name: 'Upload Data', href: '/admin/progress-upload/create', icon: Upload },
+            { name: 'My Uploads', href: '/admin/progress-upload', icon: FileText },
+            { name: 'Upload History', href: '/dashboard/data-officer/reports', icon: Database },
+        ] : []),
+        
+        // HOD Features
+        ...(user.role === 'hod' ? [
+            { name: 'Pending Approvals', href: '/dashboard/hod/approvals', icon: AlertTriangle },
+            { name: 'Department Overview', href: '/dashboard/hod/department-overview', icon: BarChart3 },
+            { name: 'Upload History', href: '/admin/progress-upload', icon: FileText },
+        ] : []),
     ];
 
     return (

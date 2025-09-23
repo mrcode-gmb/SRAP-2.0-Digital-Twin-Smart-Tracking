@@ -25,6 +25,8 @@ class DashboardController extends Controller
             'strategy_team' => $this->getStrategyTeamDashboardData(),
             'department_user' => $this->getDepartmentUserDashboardData($user),
             'data_analyst' => $this->getDataAnalystDashboardData(),
+            'data_officer' => $this->getDataOfficerDashboardData($user),
+            'hod' => $this->getHodDashboardData($user),
             default => $this->getDefaultDashboardData()
         };
 
@@ -33,12 +35,15 @@ class DashboardController extends Controller
 
     private function getAdminDashboardData()
     {
-        // Overall SRAP 2.0 metrics
+        // Overall SRAP 2.0 metrics - Global KPI View
         $totalKpis = Kpis::active()->count();
         $completedKpis = Kpis::active()->where('status', 'completed')->count();
         $onTrackKpis = Kpis::active()->where('status', 'on_track')->count();
         $atRiskKpis = Kpis::active()->where('status', 'at_risk')->count();
         $behindKpis = Kpis::active()->where('status', 'behind')->count();
+        
+        // Global KPI Achievement Percentage
+        $globalKpiAchievement = $totalKpis > 0 ? round(($completedKpis / $totalKpis) * 100, 2) : 0;
         
         // Pillar progress
         $pillarProgress = SrapPillar::active()->ordered()->get()->map(function ($pillar) {
@@ -99,7 +104,8 @@ class DashboardController extends Controller
                 'on_track_kpis' => $onTrackKpis,
                 'at_risk_kpis' => $atRiskKpis,
                 'behind_kpis' => $behindKpis,
-                'overall_progress' => $totalKpis > 0 ? round(($completedKpis / $totalKpis) * 100, 2) : 0
+                'overall_progress' => $globalKpiAchievement,
+                'global_kpi_achievement' => $globalKpiAchievement
             ],
             'pillarProgress' => $pillarProgress,
             'recentAlerts' => $recentAlerts,
@@ -263,5 +269,75 @@ class DashboardController extends Controller
     {
         // Implementation for advanced chart data
         return [];
+    }
+
+    private function getDataOfficerDashboardData($user)
+    {
+        // Data Officer dashboard - focused on data entry and uploads
+        $departmentKpis = Kpis::active()
+            ->where('department_id', $user->department_id)
+            ->with(['pillar', 'initiative'])
+            ->get();
+
+        $recentUploads = \App\Models\UploadedFile::where('uploaded_by', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        $pendingReports = $departmentKpis->filter(function($kpi) {
+            return $kpi->status === 'in_progress' || $kpi->status === 'not_started';
+        });
+
+        return [
+            'departmentKpis' => $departmentKpis,
+            'recentUploads' => $recentUploads,
+            'pendingReports' => $pendingReports,
+            'stats' => [
+                'total_kpis' => $departmentKpis->count(),
+                'pending_reports' => $pendingReports->count(),
+                'recent_uploads' => $recentUploads->count(),
+                'completion_rate' => $departmentKpis->count() > 0 ? 
+                    round(($departmentKpis->where('status', 'completed')->count() / $departmentKpis->count()) * 100, 2) : 0
+            ]
+        ];
+    }
+
+    private function getHodDashboardData($user)
+    {
+        // Head of Department dashboard - focused on approval and review
+        $departmentKpis = Kpis::active()
+            ->where('department_id', $user->department_id)
+            ->with(['pillar', 'initiative', 'progress'])
+            ->get();
+
+        $pendingApprovals = \App\Models\KpiProgress::whereHas('kpi', function($query) use ($user) {
+            $query->where('department_id', $user->department_id);
+        })
+        ->where('verified_by', null)
+        ->orderBy('created_at', 'desc')
+        ->limit(10)
+        ->get();
+
+        $departmentPerformance = [
+            'total_kpis' => $departmentKpis->count(),
+            'completed_kpis' => $departmentKpis->where('status', 'completed')->count(),
+            'on_track_kpis' => $departmentKpis->where('status', 'on_track')->count(),
+            'at_risk_kpis' => $departmentKpis->where('status', 'at_risk')->count(),
+            'behind_kpis' => $departmentKpis->where('status', 'behind')->count(),
+        ];
+
+        return [
+            'departmentKpis' => $departmentKpis,
+            'pendingApprovals' => $pendingApprovals,
+            'departmentPerformance' => $departmentPerformance,
+            'stats' => [
+                'total_kpis' => $departmentKpis->count(),
+                'pending_approvals' => $pendingApprovals->count(),
+                'completion_rate' => $departmentKpis->count() > 0 ? 
+                    round(($departmentKpis->where('status', 'completed')->count() / $departmentKpis->count()) * 100, 2) : 0,
+                'department_progress' => $departmentKpis->count() > 0 ? 
+                    round(($departmentKpis->where('status', 'completed')->count() / $departmentKpis->count()) * 100, 2) : 0
+            ]
+        ];
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Kpis;
 use App\Models\SrapPillar;
 use App\Models\Department;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -54,7 +55,9 @@ class KpiController extends Controller
     {
         return Inertia::render('Admin/Kpi/Create', [
             'pillars' => SrapPillar::active()->ordered()->get(),
+            'initiatives' => \App\Models\Initiative::active()->with('pillar')->get(),
             'departments' => Department::active()->get(),
+            'users'=> User::where('role', '!=', 'admin')->active()->get(),
         ]);
     }
 
@@ -64,21 +67,26 @@ class KpiController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:kpis,code',
             'description' => 'required|string',
+            'assigned_to'=> 'required|exists:users,id',
             'pillar_id' => 'required|exists:srap_pillars,id',
+            'initiative_id' => 'nullable|exists:initiatives,id',
             'department_id' => 'nullable|exists:departments,id',
             'measurement_type' => 'required|in:percentage,number,currency,ratio',
             'target_value' => 'required|numeric|min:0',
+            'current_value'=> 'required|numeric|min:0',
             'unit' => 'nullable|string|max:50',
             'frequency' => 'required|in:daily,weekly,monthly,quarterly,annually',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'priority' => 'required|integer|min:1|max:3',
             'weight' => 'required|numeric|min:0|max:100',
+            "baseline_value" => 'required|numeric|min:0',
+            "baseline_date" => 'required|date',
         ]);
 
         $validated['created_by'] = Auth::id();
-        $validated['current_value'] = 0;
         $validated['status'] = 'not_started';
+        $validated['current_value']= $request->current_value;
 
         $kpi = Kpis::create($validated);
 

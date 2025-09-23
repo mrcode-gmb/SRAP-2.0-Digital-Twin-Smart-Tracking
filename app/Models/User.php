@@ -110,6 +110,8 @@ class User extends Authenticatable
             'data_analyst' => 'Data Analyst',
             'cybersecurity_specialist' => 'Cybersecurity Specialist',
             'ai_developer' => 'AI Developer',
+            'data_officer' => 'Data Officer',
+            'hod' => 'Head of Department',
             default => 'User',
         };
     }

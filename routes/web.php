@@ -77,6 +77,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // SRAP Pillar Management Routes
     Route::resource('srap-pillars', SrapPillarController::class);
 
+    // Initiative Management Routes
+    Route::resource('initiatives', \App\Http\Controllers\InitiativeController::class);
+    Route::post('initiatives/{initiative}/link-kpis', [\App\Http\Controllers\InitiativeController::class, 'linkKpis'])->name('initiatives.link-kpis');
+    Route::delete('initiatives/{initiative}/kpis/{kpi}', [\App\Http\Controllers\InitiativeController::class, 'unlinkKpi'])->name('initiatives.unlink-kpi');
+
+    // Global Dashboard Routes
+    Route::get('/global-dashboard', [\App\Http\Controllers\GlobalDashboardController::class, 'index'])->name('global-dashboard');
+    Route::get('/global-dashboard/export', [\App\Http\Controllers\GlobalDashboardController::class, 'export'])->name('global-dashboard.export');
+
+    // Reports Export Routes
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/global/export', [\App\Http\Controllers\ReportsExportController::class, 'exportGlobalReport'])->name('global.export');
+        Route::get('/pillar/{pillar}/export', [\App\Http\Controllers\ReportsExportController::class, 'exportPillarReport'])->name('pillar.export');
+        Route::get('/department/{department}/export', [\App\Http\Controllers\ReportsExportController::class, 'exportDepartmentReport'])->name('department.export');
+        Route::get('/initiative/{initiative}/export', [\App\Http\Controllers\ReportsExportController::class, 'exportInitiativeReport'])->name('initiative.export');
+    });
+
     // AI Predictions Routes
     Route::prefix('ai-predictions')->name('ai-predictions.')->group(function () {
         Route::get('/', [AiPredictionController::class, 'index'])->name('index');
@@ -127,6 +144,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('progress-upload', ProgressUploadController::class);
         Route::get('progress-upload/template/{type}', [ProgressUploadController::class, 'downloadTemplate'])->name('progress-upload.template');
         Route::post('progress-upload/process', [ProgressUploadController::class, 'processUpload'])->name('progress-upload.process');
+        Route::post('progress-upload/{progress}/approve', [ProgressUploadController::class, 'approveProgress'])->name('progress-upload.approve');
+        Route::post('progress-upload/{progress}/reject', [ProgressUploadController::class, 'rejectProgress'])->name('progress-upload.reject');
+        Route::get('progress-upload/pending-approvals', [ProgressUploadController::class, 'getPendingApprovals'])->name('progress-upload.pending-approvals');
         
         Route::resource('scenarios', ScenarioSimulationController::class);
         Route::post('scenarios/simulate', [ScenarioSimulationController::class, 'simulate'])->name('scenarios.simulate');
@@ -160,6 +180,28 @@ Route::middleware(['auth', 'verified', 'role:ai_developer'])->prefix('dashboard/
     Route::get('/models', function () {
         return Inertia::render('AI/Models');
     })->name('ai.models');
+});
+
+// Data Officer Routes
+Route::middleware(['auth', 'verified', 'role:data_officer'])->prefix('dashboard/data-officer')->group(function () {
+    Route::get('/upload', function () {
+        return Inertia::render('DataOfficer/Upload');
+    })->name('data-officer.upload');
+    
+    Route::get('/reports', function () {
+        return Inertia::render('DataOfficer/Reports');
+    })->name('data-officer.reports');
+});
+
+// HOD Routes
+Route::middleware(['auth', 'verified'])->prefix('dashboard/hod')->group(function () {
+    Route::get('/approvals', function () {
+        return Inertia::render('HOD/Approvals');
+    })->name('hod.approvals');
+    
+    Route::get('/department-overview', function () {
+        return Inertia::render('HOD/DepartmentOverview');
+    })->name('hod.department-overview');
 });
 
 // Error Routes

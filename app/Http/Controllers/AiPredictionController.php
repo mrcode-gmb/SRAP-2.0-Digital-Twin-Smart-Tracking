@@ -83,17 +83,28 @@ class AiPredictionController extends Controller
                 'requested_by' => Auth::id()
             ]);
 
-            return response()->json([
-                'success' => true,
-                'prediction_id' => $prediction->id,
-                'results' => $predictionData
-            ]);
+            // Keep JSON for API/proof purposes, but also redirect for web interface
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'prediction_id' => $prediction->id,
+                    'results' => $predictionData
+                ]);
+            }
+
+            return redirect()->route('ai-predictions.show', $prediction)
+                ->with('success', 'Manual prediction completed successfully');
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+            
+            return back()->with('error', 'Prediction failed: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -126,18 +137,29 @@ class AiPredictionController extends Controller
                 'requested_by' => Auth::id()
             ]);
 
-            return response()->json([
-                'success' => true,
-                'prediction_id' => $bulkPrediction->id,
-                'results' => $predictions,
-                'download_url' => route('ai-predictions.download', $bulkPrediction->id)
-            ]);
+            // Keep JSON for API/proof purposes, but also redirect for web interface
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'prediction_id' => $bulkPrediction->id,
+                    'results' => $predictions,
+                    'download_url' => route('ai-predictions.download', $bulkPrediction->id)
+                ]);
+            }
+
+            return redirect()->route('ai-predictions.show', $bulkPrediction)
+                ->with('success', 'Bulk prediction completed successfully! ' . count($predictions) . ' predictions processed.');
             
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+            
+            return back()->with('error', 'Bulk prediction failed: ' . $e->getMessage())
+                ->withInput();
         }
     }
 

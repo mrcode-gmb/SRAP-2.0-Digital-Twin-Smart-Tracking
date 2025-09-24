@@ -148,6 +148,10 @@ class AiPredictionController extends Controller
                 'prediction_result'     => [
                     'risk_level'   => $riskLevel,
                     'risk_score'   => $riskScore,
+                    'predicted_outcome' => $this->generatePredictedOutcome($riskLevel, $riskScore),
+                    'success_probability' => $this->calculateSuccessProbability($riskScore),
+                    'expected_completion' => $this->estimateCompletion($validated),
+                    'recommendations' => $this->generateRecommendations($riskLevel, $validated),
                 ],
                 'risk_score'            => $riskScore,
                 'risk_level'            => strtolower($riskLevel),
@@ -167,6 +171,7 @@ class AiPredictionController extends Controller
 
             return redirect()->route('admin.ai-predictions.show', $prediction)
                 ->with('success', 'Risk prediction completed successfully');
+
 
         } catch (\Exception $e) {
             return back()->with('error', 'Prediction failed: ' . $e->getMessage())
@@ -243,6 +248,16 @@ class AiPredictionController extends Controller
                 'prediction_result'     => [
                     'risk_level'     => $riskLevel,
                     'risk_score'     => $riskScore,
+                    'predicted_outcome' => $this->generatePredictedOutcome($riskLevel, $riskScore),
+                    'success_probability' => $this->calculateSuccessProbability($riskScore),
+                    'expected_completion' => $this->estimateCompletion([
+                        'delay_days' => $row['Delay_Days'],
+                        'stakeholder_engagement_score' => $row['Stakeholder_Engagement_Score']
+                    ]),
+                    'recommendations' => $this->generateRecommendations($riskLevel, [
+                        'delay_days' => $row['Delay_Days'],
+                        'stakeholder_engagement_score' => $row['Stakeholder_Engagement_Score']
+                    ]),
                 ],
                 'confidence_score'      => 0.85, // you can pull from model if returned
                 'prediction_date'       => now()->toDateString(),
@@ -437,6 +452,79 @@ class AiPredictionController extends Controller
     }
     
     /**
+     * Generate predicted outcome based on risk level
+     */
+    private function generatePredictedOutcome($riskLevel, $riskScore)
+    {
+        return match($riskLevel) {
+            'Low' => 'KPI likely to meet targets with minimal intervention',
+            'Medium' => 'KPI may face challenges but achievable with proper monitoring',
+            'High' => 'KPI at significant risk of missing targets - immediate action required',
+            default => 'Outcome uncertain - requires further analysis'
+        };
+    }
+
+    /**
+     * Calculate success probability
+     */
+    private function calculateSuccessProbability($riskScore)
+    {
+        // Inverse relationship: higher risk = lower success probability
+        return max(10, 100 - $riskScore);
+    }
+
+    /**
+     * Estimate completion timeline
+     */
+    private function estimateCompletion($validated)
+    {
+        $delayDays = (int) ($validated['delay_days'] ?? 0);
+        $baseDate = now()->addDays(30); // Base 30 days
+        
+        // Add delay impact
+        $adjustedDate = $baseDate->addDays($delayDays);
+        
+        return $adjustedDate->toDateString();
+    }
+
+    /**
+     * Generate AI recommendations
+     */
+    private function generateRecommendations($riskLevel, $validated)
+    {
+        $recommendations = [];
+        
+        // Base recommendations by risk level
+        switch($riskLevel) {
+            case 'High':
+                $recommendations[] = 'Immediate escalation to senior management required';
+                $recommendations[] = 'Conduct emergency stakeholder meeting';
+                $recommendations[] = 'Reassess resource allocation and timeline';
+                break;
+            case 'Medium':
+                $recommendations[] = 'Increase monitoring frequency to weekly';
+                $recommendations[] = 'Review and optimize current processes';
+                $recommendations[] = 'Consider additional resource allocation';
+                break;
+            case 'Low':
+                $recommendations[] = 'Continue current approach with regular monitoring';
+                $recommendations[] = 'Document best practices for replication';
+                break;
+        }
+
+        // Add specific recommendations based on input data
+        if ((float) ($validated['stakeholder_engagement_score'] ?? 0) < 7) {
+            $recommendations[] = 'Improve stakeholder engagement through regular communication';
+        }
+        
+        if ((int) ($validated['delay_days'] ?? 0) > 10) {
+            $recommendations[] = 'Implement accelerated timeline recovery plan';
+        }
+
+        return $recommendations;
+    }
+
+    /**
      * Get prediction template
      */
     public function downloadTemplate()
@@ -459,4 +547,5 @@ class AiPredictionController extends Controller
         
         return Excel::download(new \App\Exports\AiPredictionTemplateExport($headers, $sampleData), $filename);
     }
+
 }

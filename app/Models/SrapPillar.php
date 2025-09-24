@@ -18,9 +18,13 @@ class SrapPillar extends Model
         'name',
         'code',
         'description',
+        'objectives',
         'color',
         'icon',
         'target_completion_date',
+        'budget_allocation',
+        'responsible_department',
+        'success_metrics',
         'order_index',
         'weight',
         'priority_level',
@@ -29,6 +33,8 @@ class SrapPillar extends Model
 
     protected $casts = [
         'weight' => 'decimal:2',
+        'budget_allocation' => 'decimal:2',
+        'target_completion_date' => 'date',
         'is_active' => 'boolean',
     ];
 

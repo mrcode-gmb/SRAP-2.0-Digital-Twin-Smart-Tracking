@@ -18,7 +18,7 @@ class AiPredictionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = AiPrediction::with('requester:id,name,email')
+        $query = AiPrediction::with('requestedBy:id,name,email')
             ->select([
                 'id', 'prediction_type', 'target_type', 'target_id', 
                 'confidence_score', 'prediction_date', 'status', 

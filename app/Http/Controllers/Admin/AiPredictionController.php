@@ -130,37 +130,45 @@ class AiPredictionController extends Controller
             }
 
             $riskLevel = $responseData['predicted_risk']; // "High", "Medium", or "Low"
-
+            
+            // Calculate risk score based on level
+            $riskScore = match ($riskLevel) {
+                'Low' => 30,
+                'Medium' => 60,
+                'High' => 90,
+                default => 50,
+            };
 
             $prediction = AiPrediction::create([
-                'prediction_type'       => 'risk_assessment', // or 'kpi_forecast', depending on your logic
+                'user_id'               => auth()->id(),
+                'prediction_type'       => 'manual_risk_prediction',
                 'target_type'           => 'kpi',
                 'target_id'             => $validated['kpi_id'],
-                'input_data'            => $validated, // Laravel will cast to JSON if you set casts in the model
+                'input_data'            => $validated,
                 'prediction_result'     => [
                     'risk_level'   => $riskLevel,
-                    'risk_score'   => $riskScore ?? null,
+                    'risk_score'   => $riskScore,
                 ],
-                'confidence_score'      => $predictionResult['confidence'] ?? 0.85,
-                'prediction_date'       => Carbon::now()->toDateString(), // stores YYYY-MM-DD
-                'forecast_period_start' => null, // if not forecasting
-                'forecast_period_end'   => null, // if not forecasting
+                'risk_score'            => $riskScore,
+                'risk_level'            => strtolower($riskLevel),
+                'confidence_score'      => $responseData['confidence'] ?? 85.0,
+                'prediction_date'       => now()->toDateString(),
+                'forecast_period_start' => null,
+                'forecast_period_end'   => null,
                 'model_version'         => 'SRAP1.0_v1.0',
                 'parameters'            => [
                     'framework' => 'Flask AI service',
                     'source'    => 'NITDA MVP',
                 ],
                 'status'                => 'completed',
-                'notes'                 => 'Prediction generated successfully',
+                'notes'                 => 'Manual prediction generated successfully',
                 'requested_by'          => auth()->id(),
             ]);
-            
 
             return redirect()->route('admin.ai-predictions.show', $prediction)
                 ->with('success', 'Risk prediction completed successfully');
 
         } catch (\Exception $e) {
-            return $e;
             return back()->with('error', 'Prediction failed: ' . $e->getMessage())
                 ->withInput();
         }
@@ -209,6 +217,7 @@ class AiPredictionController extends Controller
         }
         
         // Store each prediction row in DB
+        $lastPrediction = null;
         foreach ($data['predictions'] as $row) {
             // Calculate risk score if you want (optional)
             $riskLevel = $row['Predicted_Risk'] ?? 'Medium';
@@ -216,15 +225,14 @@ class AiPredictionController extends Controller
                 'Low'    => 30,   // 30%
                 'Medium' => 60,   // 60%
                 'High'   => 90,   // 90%
-                default  => null,
+                default  => 50,
             };
             
-        
-            AiPrediction::create([
+            $lastPrediction = AiPrediction::create([
                 'user_id'               => auth()->id(),
-                'prediction_type'       => 'risk_assessment', // could also be 'bulk'
+                'prediction_type'       => 'bulk_risk_assessment',
                 'target_type'           => 'kpi',
-                'target_id'             => $validated['kpi_id'] ?? null,
+                'target_id'             => null, // Bulk predictions may not have specific KPI
                 'input_data'            => [
                     'progress'       => $row['Progress (%)'],
                     'budget'         => $row['Budget_Utilization (%)'],
@@ -253,12 +261,14 @@ class AiPredictionController extends Controller
         }
         
 
-        return back()->with('success', 'Bulk prediction saved successfully!')
-            ->with('prediction_results', [
-                'success_count' => count($data['predictions']),
-                'error_count' => 0,
-                'predictions' => $data['predictions']
-            ]);
+        // Redirect to the last prediction's show page, or index if no predictions
+        if ($lastPrediction) {
+            return redirect()->route('admin.ai-predictions.show', $lastPrediction)
+                ->with('success', 'Bulk prediction completed successfully! ' . count($data['predictions']) . ' predictions created.');
+        } else {
+            return redirect()->route('admin.ai-predictions.index')
+                ->with('success', 'Bulk prediction completed successfully! ' . count($data['predictions']) . ' predictions created.');
+        }
 
     } catch (\Exception $e) {
         return back()->with('error', 'Bulk prediction failed: ' . $e->getMessage());

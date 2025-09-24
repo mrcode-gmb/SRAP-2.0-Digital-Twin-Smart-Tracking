@@ -61,6 +61,11 @@ class AiPrediction extends Model
         return $this->belongsTo(User::class, 'requested_by');
     }
 
+    public function requester(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'requested_by');
+    }
+
     public function getConfidenceLevelAttribute()
     {
         if ($this->confidence_score >= 90) return 'Very High';

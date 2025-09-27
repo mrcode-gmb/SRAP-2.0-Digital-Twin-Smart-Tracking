@@ -14,12 +14,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            DepartmentSeeder::class,
-            SrapPillarSeeder::class,
-            UserSeeder::class,
-            KpiSeeder::class,
-            MilestoneSeeder::class,
+            Srap2DataSeeder::class,
             AiPredictionSeeder::class,
+            RoleUsersSeeder::class,
         ]);
     }
 }

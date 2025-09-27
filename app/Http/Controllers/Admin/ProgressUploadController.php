@@ -127,8 +127,11 @@ class ProgressUploadController extends Controller
      */
     public function show($id)
     {
-        // For now, redirect to index since we don't have individual upload details
-        return redirect()->route('admin.progress-upload.index');
+        $upload = UploadedFile::with('uploader')->findOrFail($id);
+        
+        return Inertia::render('Admin/ProgressUpload/Show', [
+            'upload' => $upload
+        ]);
     }
 
     /**
@@ -677,5 +680,13 @@ class ProgressUploadController extends Controller
         $pendingApprovals = $query->orderBy('created_at', 'desc')->paginate(15);
 
         return response()->json($pendingApprovals);
+    }
+
+    /**
+     * Process upload (alias for store method to match route)
+     */
+    public function processUpload(Request $request)
+    {
+        return $this->store($request);
     }
 }

@@ -15,72 +15,103 @@ class Srap2DataSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-    {
-        // Create SRAP 2.0 Pillars
+        // Create SRAP 2.0 Pillars - Official 8 Pillars
         $pillars = [
             [
-                'name' => 'Digital Infrastructure',
+                'name' => 'Foster Digital Literacy and Cultivate Talents',
                 'code' => 'PILLAR_1',
-                'description' => 'Development and enhancement of digital infrastructure to support Nigeria\'s digital transformation',
+                'description' => 'Developing digital skills and cultivating talent for the digital economy.',
                 'color' => '#3B82F6',
+                'icon' => 'users',
+                'target_completion_date' => '2030-12-31',
                 'order_index' => 1,
-                'weight' => 12.5
+                'weight' => 12.5,
+                'priority_level' => 'high',
+                'is_active' => true
             ],
             [
-                'name' => 'Digital Skills and Literacy',
+                'name' => 'Build a Robust Technology Research Ecosystem',
                 'code' => 'PILLAR_2',
-                'description' => 'Building digital skills and literacy across all segments of society',
+                'description' => 'Establishing and strengthening technology research capabilities and innovation ecosystems.',
                 'color' => '#10B981',
+                'icon' => 'flask',
+                'target_completion_date' => '2030-12-31',
                 'order_index' => 2,
-                'weight' => 12.5
+                'weight' => 12.5,
+                'priority_level' => 'high',
+                'is_active' => true
             ],
             [
-                'name' => 'Digital Government',
+                'name' => 'Strengthen Policy Implementation and Legal Framework',
                 'code' => 'PILLAR_3',
-                'description' => 'Transforming government services through digital technologies',
+                'description' => 'Developing and implementing robust policies and legal frameworks for digital transformation.',
                 'color' => '#F59E0B',
+                'icon' => 'scale',
+                'target_completion_date' => '2030-12-31',
                 'order_index' => 3,
-                'weight' => 12.5
+                'weight' => 12.5,
+                'priority_level' => 'medium',
+                'is_active' => true
             ],
             [
-                'name' => 'Digital Economy',
+                'name' => 'Promote Inclusive Access to Digital Infrastructure and Services',
                 'code' => 'PILLAR_4',
-                'description' => 'Fostering a thriving digital economy and innovation ecosystem',
-                'color' => '#EF4444',
-                'order_index' => 4,
-                'weight' => 12.5
-            ],
-            [
-                'name' => 'Digital Society',
-                'code' => 'PILLAR_5',
-                'description' => 'Creating an inclusive digital society for all Nigerians',
+                'description' => 'Ensuring inclusive access to digital infrastructure and services for all citizens.',
                 'color' => '#8B5CF6',
+                'icon' => 'wifi',
+                'target_completion_date' => '2030-12-31',
+                'order_index' => 4,
+                'weight' => 12.5,
+                'priority_level' => 'high',
+                'is_active' => true
+            ],
+            [
+                'name' => 'Strengthen Cybersecurity and Enhance Digital Trust',
+                'code' => 'PILLAR_5',
+                'description' => 'Building robust cybersecurity frameworks and enhancing trust in digital systems.',
+                'color' => '#EF4444',
+                'icon' => 'shield',
+                'target_completion_date' => '2030-12-31',
                 'order_index' => 5,
-                'weight' => 12.5
+                'weight' => 12.5,
+                'priority_level' => 'critical',
+                'is_active' => true
             ],
             [
-                'name' => 'Trust and Security',
+                'name' => 'Nurture an Innovative and Entrepreneurial Ecosystem',
                 'code' => 'PILLAR_6',
-                'description' => 'Ensuring cybersecurity, privacy, and trust in digital systems',
+                'description' => 'Fostering innovation and entrepreneurship in the digital economy.',
                 'color' => '#06B6D4',
+                'icon' => 'lightbulb',
+                'target_completion_date' => '2030-12-31',
                 'order_index' => 6,
-                'weight' => 12.5
+                'weight' => 12.5,
+                'priority_level' => 'medium',
+                'is_active' => true
             ],
             [
-                'name' => 'Digital Transformation Technologies',
+                'name' => 'Forge Strategic Partnerships and Collaboration',
                 'code' => 'PILLAR_7',
-                'description' => 'Leveraging emerging technologies for digital transformation',
-                'color' => '#EC4899',
+                'description' => 'Building strategic partnerships and collaborations for digital transformation initiatives.',
+                'color' => '#84CC16',
+                'icon' => 'users',
+                'target_completion_date' => '2030-12-31',
                 'order_index' => 7,
-                'weight' => 12.5
+                'weight' => 12.5,
+                'priority_level' => 'medium',
+                'is_active' => true
             ],
             [
-                'name' => 'Indigenous Content Development',
+                'name' => 'Cultivate a Vibrant Organisational Culture and an Agile Workforce in NITDA',
                 'code' => 'PILLAR_8',
-                'description' => 'Promoting local content creation and digital innovation',
-                'color' => '#84CC16',
+                'description' => 'Developing organizational culture and building an agile workforce within NITDA.',
+                'color' => '#F97316',
+                'icon' => 'building-2',
+                'target_completion_date' => '2030-12-31',
                 'order_index' => 8,
-                'weight' => 12.5
+                'weight' => 12.5,
+                'priority_level' => 'high',
+                'is_active' => true
             ]
         ];
 
@@ -89,14 +120,14 @@ class Srap2DataSeeder extends Seeder
         }
 
         // Get created pillars
-        $digitalInfra = SrapPillar::where('code', 'PILLAR_1')->first();
-        $digitalSkills = SrapPillar::where('code', 'PILLAR_2')->first();
-        $digitalGov = SrapPillar::where('code', 'PILLAR_3')->first();
-        $digitalEconomy = SrapPillar::where('code', 'PILLAR_4')->first();
-        $digitalSociety = SrapPillar::where('code', 'PILLAR_5')->first();
-        $trustSecurity = SrapPillar::where('code', 'PILLAR_6')->first();
-        $digitalTech = SrapPillar::where('code', 'PILLAR_7')->first();
-        $indigenousContent = SrapPillar::where('code', 'PILLAR_8')->first();
+        $digitalLiteracy = SrapPillar::where('code', 'PILLAR_1')->first();
+        $techResearch = SrapPillar::where('code', 'PILLAR_2')->first();
+        $policyLegal = SrapPillar::where('code', 'PILLAR_3')->first();
+        $digitalAccess = SrapPillar::where('code', 'PILLAR_4')->first();
+        $cybersecurity = SrapPillar::where('code', 'PILLAR_5')->first();
+        $innovationEcosystem = SrapPillar::where('code', 'PILLAR_6')->first();
+        $partnerships = SrapPillar::where('code', 'PILLAR_7')->first();
+        $orgCulture = SrapPillar::where('code', 'PILLAR_8')->first();
 
         // Create sample departments
         $departments = [
@@ -127,79 +158,62 @@ class Srap2DataSeeder extends Seeder
             'email_verified_at' => now()
         ]);
 
-        // Create Initiatives for each pillar
+        // Create Initiatives - NITDA Strategic Initiatives
         $initiatives = [
-            // Pillar 1: Digital Infrastructure
+            // Pillar 8: Cultivate a Vibrant Organisational Culture and an Agile Workforce in NITDA
             [
-                'name' => 'National Broadband Infrastructure Development',
+                'name' => 'Behavioural Mindset and Cultural Reorientation',
                 'code' => 'INIT_001',
-                'description' => 'Expand broadband infrastructure to achieve 70% coverage by 2025',
-                'pillar_id' => $digitalInfra->id,
+                'description' => 'Achieve cultural transformation by 2025 to establish a psychologically safe organisation, enhancing collaboration, creativity, and effectiveness.',
+                'pillar_id' => $orgCulture->id,
                 'department_id' => $nitda->id,
                 'start_date' => '2024-01-01',
                 'end_date' => '2025-12-31',
                 'status' => 'in_progress',
                 'priority' => 1,
-                'budget' => 50000000000,
+                'budget' => 2000000000,
                 'lead_agency' => 'NITDA',
                 'created_by' => $admin->id
             ],
             [
-                'name' => '5G Network Deployment',
+                'name' => 'Performance and Productivity Enhancement',
                 'code' => 'INIT_002',
-                'description' => 'Deploy 5G networks in major cities across Nigeria',
-                'pillar_id' => $digitalInfra->id,
-                'department_id' => $fmcde->id,
-                'start_date' => '2024-06-01',
+                'description' => 'Aim to improve NITDA\'s performance and productivity by 2027, through continuous improvement in the Performance Management System.',
+                'pillar_id' => $orgCulture->id,
+                'department_id' => $nitda->id,
+                'start_date' => '2024-01-01',
+                'end_date' => '2027-12-31',
+                'status' => 'in_progress',
+                'priority' => 1,
+                'budget' => 3000000000,
+                'lead_agency' => 'NITDA',
+                'created_by' => $admin->id
+            ],
+            [
+                'name' => 'Learning Culture Promotion',
+                'code' => 'INIT_003',
+                'description' => 'Foster a culture of continuous learning and skill development, keeping the workforce adaptable and well-equipped for technological advancements.',
+                'pillar_id' => $orgCulture->id,
+                'department_id' => $nitda->id,
+                'start_date' => '2024-01-01',
+                'end_date' => '2030-12-31',
+                'status' => 'on_track',
+                'priority' => 1,
+                'budget' => 5000000000,
+                'lead_agency' => 'NITDA',
+                'created_by' => $admin->id
+            ],
+            [
+                'name' => 'Adoption of Global Best Practices',
+                'code' => 'INIT_004',
+                'description' => 'Align NITDA\'s operations with international standards for optimal service delivery, ensuring the Agency remains competitive and relevant.',
+                'pillar_id' => $orgCulture->id,
+                'department_id' => $nitda->id,
+                'start_date' => '2024-01-01',
                 'end_date' => '2026-12-31',
                 'status' => 'in_progress',
                 'priority' => 1,
-                'budget' => 30000000000,
-                'lead_agency' => 'NCC',
-                'created_by' => $admin->id
-            ],
-            // Pillar 2: Digital Skills
-            [
-                'name' => 'Digital Skills Training Program',
-                'code' => 'INIT_003',
-                'description' => 'Train 10 million Nigerians in digital skills by 2025',
-                'pillar_id' => $digitalSkills->id,
-                'department_id' => $nitda->id,
-                'start_date' => '2024-01-01',
-                'end_date' => '2025-12-31',
-                'status' => 'on_track',
-                'priority' => 1,
-                'budget' => 15000000000,
-                'lead_agency' => 'NITDA',
-                'created_by' => $admin->id
-            ],
-            // Pillar 3: Digital Government
-            [
-                'name' => 'Government Digital Services Platform',
-                'code' => 'INIT_004',
-                'description' => 'Digitize 80% of government services by 2025',
-                'pillar_id' => $digitalGov->id,
-                'department_id' => $nitda->id,
-                'start_date' => '2024-01-01',
-                'end_date' => '2025-12-31',
-                'status' => 'in_progress',
-                'priority' => 1,
-                'budget' => 25000000000,
-                'lead_agency' => 'NITDA',
-                'created_by' => $admin->id
-            ],
-            // Pillar 4: Digital Economy
-            [
-                'name' => 'Startup Nigeria Initiative',
-                'code' => 'INIT_005',
-                'description' => 'Support 1000 tech startups and create 500,000 jobs',
-                'pillar_id' => $digitalEconomy->id,
-                'department_id' => $nitda->id,
-                'start_date' => '2024-01-01',
-                'end_date' => '2025-12-31',
-                'status' => 'on_track',
-                'priority' => 1,
-                'budget' => 20000000000,
+                'budget' => 1500000000,
                 'lead_agency' => 'NITDA',
                 'created_by' => $admin->id
             ]
@@ -210,165 +224,163 @@ class Srap2DataSeeder extends Seeder
         }
 
         // Create KPIs for each initiative
-        $broadbandInit = Initiative::where('code', 'INIT_001')->first();
-        $fiveGInit = Initiative::where('code', 'INIT_002')->first();
-        $skillsInit = Initiative::where('code', 'INIT_003')->first();
-        $govServicesInit = Initiative::where('code', 'INIT_004')->first();
-        $startupInit = Initiative::where('code', 'INIT_005')->first();
+        $culturalInit = Initiative::where('code', 'INIT_001')->first();
+        $performanceInit = Initiative::where('code', 'INIT_002')->first();
+        $learningInit = Initiative::where('code', 'INIT_003')->first();
+        $bestPracticesInit = Initiative::where('code', 'INIT_004')->first();
 
         $kpis = [
-            // Broadband Infrastructure KPIs
+            // Behavioural Mindset and Cultural Reorientation KPIs
             [
-                'name' => 'National Broadband Coverage',
+                'name' => 'Employee Psychological Safety Index',
                 'code' => 'KPI_001',
-                'description' => 'Percentage of national territory covered by broadband infrastructure',
-                'pillar_id' => $digitalInfra->id,
-                'initiative_id' => $broadbandInit->id,
+                'description' => 'Measure of psychological safety within NITDA organization',
+                'pillar_id' => $orgCulture->id,
+                'initiative_id' => $culturalInit->id,
                 'department_id' => $nitda->id,
                 'measurement_type' => 'percentage',
-                'target_value' => 70.00,
-                'current_value' => 45.50,
+                'target_value' => 85.00,
+                'current_value' => 65.00,
                 'unit' => '%',
                 'frequency' => 'quarterly',
                 'start_date' => '2024-01-01',
                 'end_date' => '2025-12-31',
                 'status' => 'in_progress',
-                'priority' => 1,
-                'weight' => 2.0,
-                'created_by' => $admin->id
-            ],
-            [
-                'name' => 'Fiber Optic Cable Deployment',
-                'code' => 'KPI_002',
-                'description' => 'Kilometers of fiber optic cables deployed',
-                'pillar_id' => $digitalInfra->id,
-                'initiative_id' => $broadbandInit->id,
-                'department_id' => $nitda->id,
-                'measurement_type' => 'number',
-                'target_value' => 50000.00,
-                'current_value' => 32000.00,
-                'unit' => 'km',
-                'frequency' => 'monthly',
-                'start_date' => '2024-01-01',
-                'end_date' => '2025-12-31',
-                'status' => 'on_track',
-                'priority' => 2,
-                'weight' => 1.5,
-                'created_by' => $admin->id
-            ],
-            // 5G Network KPIs
-            [
-                'name' => '5G Base Stations Deployed',
-                'code' => 'KPI_003',
-                'description' => 'Number of 5G base stations deployed nationwide',
-                'pillar_id' => $digitalInfra->id,
-                'initiative_id' => $fiveGInit->id,
-                'department_id' => $fmcde->id,
-                'measurement_type' => 'number',
-                'target_value' => 5000.00,
-                'current_value' => 1200.00,
-                'unit' => 'stations',
-                'frequency' => 'monthly',
-                'start_date' => '2024-06-01',
-                'end_date' => '2026-12-31',
-                'status' => 'in_progress',
-                'priority' => 1,
-                'weight' => 2.0,
-                'created_by' => $admin->id
-            ],
-            // Digital Skills KPIs
-            [
-                'name' => 'Citizens Trained in Digital Skills',
-                'code' => 'KPI_004',
-                'description' => 'Number of Nigerian citizens trained in digital skills',
-                'pillar_id' => $digitalSkills->id,
-                'initiative_id' => $skillsInit->id,
-                'department_id' => $nitda->id,
-                'measurement_type' => 'number',
-                'target_value' => 10000000.00,
-                'current_value' => 3500000.00,
-                'unit' => 'people',
-                'frequency' => 'monthly',
-                'start_date' => '2024-01-01',
-                'end_date' => '2025-12-31',
-                'status' => 'on_track',
                 'priority' => 1,
                 'weight' => 3.0,
                 'created_by' => $admin->id
             ],
             [
-                'name' => 'Digital Literacy Centers Established',
-                'code' => 'KPI_005',
-                'description' => 'Number of digital literacy centers established nationwide',
-                'pillar_id' => $digitalSkills->id,
-                'initiative_id' => $skillsInit->id,
-                'department_id' => $nitda->id,
-                'measurement_type' => 'number',
-                'target_value' => 1000.00,
-                'current_value' => 650.00,
-                'unit' => 'centers',
-                'frequency' => 'quarterly',
-                'start_date' => '2024-01-01',
-                'end_date' => '2025-12-31',
-                'status' => 'on_track',
-                'priority' => 2,
-                'weight' => 1.5,
-                'created_by' => $admin->id
-            ],
-            // Digital Government KPIs
-            [
-                'name' => 'Government Services Digitized',
-                'code' => 'KPI_006',
-                'description' => 'Percentage of government services available digitally',
-                'pillar_id' => $digitalGov->id,
-                'initiative_id' => $govServicesInit->id,
+                'name' => 'Collaboration Effectiveness Score',
+                'code' => 'KPI_002',
+                'description' => 'Assessment of cross-departmental collaboration effectiveness',
+                'pillar_id' => $orgCulture->id,
+                'initiative_id' => $culturalInit->id,
                 'department_id' => $nitda->id,
                 'measurement_type' => 'percentage',
                 'target_value' => 80.00,
-                'current_value' => 55.00,
+                'current_value' => 58.00,
                 'unit' => '%',
                 'frequency' => 'quarterly',
                 'start_date' => '2024-01-01',
                 'end_date' => '2025-12-31',
                 'status' => 'in_progress',
+                'priority' => 2,
+                'weight' => 2.5,
+                'created_by' => $admin->id
+            ],
+            // Performance and Productivity Enhancement KPIs
+            [
+                'name' => 'Overall Performance Management Score',
+                'code' => 'KPI_003',
+                'description' => 'Aggregate performance score from the Performance Management System',
+                'pillar_id' => $orgCulture->id,
+                'initiative_id' => $performanceInit->id,
+                'department_id' => $nitda->id,
+                'measurement_type' => 'percentage',
+                'target_value' => 90.00,
+                'current_value' => 72.00,
+                'unit' => '%',
+                'frequency' => 'quarterly',
+                'start_date' => '2024-01-01',
+                'end_date' => '2027-12-31',
+                'status' => 'in_progress',
+                'priority' => 1,
+                'weight' => 3.0,
+                'created_by' => $admin->id
+            ],
+            [
+                'name' => 'Productivity Improvement Rate',
+                'code' => 'KPI_004',
+                'description' => 'Year-over-year productivity improvement percentage',
+                'pillar_id' => $orgCulture->id,
+                'initiative_id' => $performanceInit->id,
+                'department_id' => $nitda->id,
+                'measurement_type' => 'percentage',
+                'target_value' => 25.00,
+                'current_value' => 12.00,
+                'unit' => '%',
+                'frequency' => 'annually',
+                'start_date' => '2024-01-01',
+                'end_date' => '2027-12-31',
+                'status' => 'in_progress',
                 'priority' => 1,
                 'weight' => 2.5,
                 'created_by' => $admin->id
             ],
-            // Digital Economy KPIs
+            // Learning Culture Promotion KPIs
             [
-                'name' => 'Tech Startups Supported',
-                'code' => 'KPI_007',
-                'description' => 'Number of technology startups supported through various programs',
-                'pillar_id' => $digitalEconomy->id,
-                'initiative_id' => $startupInit->id,
+                'name' => 'Employee Training Participation Rate',
+                'code' => 'KPI_005',
+                'description' => 'Percentage of employees participating in continuous learning programs',
+                'pillar_id' => $orgCulture->id,
+                'initiative_id' => $learningInit->id,
                 'department_id' => $nitda->id,
-                'measurement_type' => 'number',
-                'target_value' => 1000.00,
-                'current_value' => 420.00,
-                'unit' => 'startups',
+                'measurement_type' => 'percentage',
+                'target_value' => 95.00,
+                'current_value' => 78.00,
+                'unit' => '%',
                 'frequency' => 'quarterly',
                 'start_date' => '2024-01-01',
-                'end_date' => '2025-12-31',
+                'end_date' => '2030-12-31',
                 'status' => 'on_track',
                 'priority' => 1,
                 'weight' => 2.0,
                 'created_by' => $admin->id
             ],
             [
-                'name' => 'Digital Jobs Created',
-                'code' => 'KPI_008',
-                'description' => 'Number of digital economy jobs created',
-                'pillar_id' => $digitalEconomy->id,
-                'initiative_id' => $startupInit->id,
+                'name' => 'Skills Development Index',
+                'code' => 'KPI_006',
+                'description' => 'Measure of workforce skill advancement and technological adaptability',
+                'pillar_id' => $orgCulture->id,
+                'initiative_id' => $learningInit->id,
                 'department_id' => $nitda->id,
-                'measurement_type' => 'number',
-                'target_value' => 500000.00,
-                'current_value' => 180000.00,
-                'unit' => 'jobs',
+                'measurement_type' => 'percentage',
+                'target_value' => 85.00,
+                'current_value' => 68.00,
+                'unit' => '%',
                 'frequency' => 'quarterly',
                 'start_date' => '2024-01-01',
-                'end_date' => '2025-12-31',
+                'end_date' => '2030-12-31',
+                'status' => 'on_track',
+                'priority' => 2,
+                'weight' => 2.0,
+                'created_by' => $admin->id
+            ],
+            // Adoption of Global Best Practices KPIs
+            [
+                'name' => 'International Standards Compliance Rate',
+                'code' => 'KPI_007',
+                'description' => 'Percentage of operations aligned with international standards',
+                'pillar_id' => $orgCulture->id,
+                'initiative_id' => $bestPracticesInit->id,
+                'department_id' => $nitda->id,
+                'measurement_type' => 'percentage',
+                'target_value' => 90.00,
+                'current_value' => 65.00,
+                'unit' => '%',
+                'frequency' => 'quarterly',
+                'start_date' => '2024-01-01',
+                'end_date' => '2026-12-31',
+                'status' => 'in_progress',
+                'priority' => 1,
+                'weight' => 2.5,
+                'created_by' => $admin->id
+            ],
+            [
+                'name' => 'Service Delivery Quality Score',
+                'code' => 'KPI_008',
+                'description' => 'Assessment of service delivery quality and competitiveness',
+                'pillar_id' => $orgCulture->id,
+                'initiative_id' => $bestPracticesInit->id,
+                'department_id' => $nitda->id,
+                'measurement_type' => 'percentage',
+                'target_value' => 88.00,
+                'current_value' => 71.00,
+                'unit' => '%',
+                'frequency' => 'quarterly',
+                'start_date' => '2024-01-01',
+                'end_date' => '2026-12-31',
                 'status' => 'in_progress',
                 'priority' => 1,
                 'weight' => 2.5,

@@ -70,7 +70,7 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,strategy_team,department_user,data_analyst,cybersecurity_specialist,ai_developer',
+            'role' => 'required|in:admin,strategy_team,department_user,data_analyst,cybersecurity_specialist,ai_developer,hod,data_officer',
             'department_id' => 'nullable|exists:departments,id'
         ]);
 
@@ -121,7 +121,7 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:admin,strategy_team,department_user,data_analyst,cybersecurity_specialist,ai_developer',
+            'role' => 'required|in:admin,strategy_team,department_user,data_analyst,cybersecurity_specialist,ai_developer,hod,data_officer',
             'department_id' => 'nullable|exists:departments,id'
         ]);
 

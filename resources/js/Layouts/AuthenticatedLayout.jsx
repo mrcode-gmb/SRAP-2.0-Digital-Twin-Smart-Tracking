@@ -65,6 +65,7 @@ function Sidebar({ isOpen, onClose, user }) {
         // AI & Analytics
         { name: 'AI Predictions', href: '/admin/ai-predictions', icon: Brain },
         { name: 'Analytics', href: '/dashboard/analyst/analytics', icon: TrendingUp },
+        { name: 'Chatbot', href: '/admin/chatbot', icon: MessageSquare },
         
         // Admin Features
         ...(user.role === 'admin' ? [
@@ -72,7 +73,6 @@ function Sidebar({ isOpen, onClose, user }) {
             { name: 'Reports', href: '/admin/reports', icon: FileText },
             { name: 'User Management', href: '/admin/users', icon: Users },
             { name: 'Data Upload', href: '/admin/progress-upload', icon: Upload },
-            { name: 'Chatbot', href: '/admin/chatbot', icon: MessageSquare },
             { name: 'Scenarios', href: '/admin/scenarios', icon: BarChart3 },
             { name: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
         ] : []),
@@ -117,7 +117,11 @@ function Sidebar({ isOpen, onClose, user }) {
                     {/* Logo */}
                     <div className="flex h-16 items-center justify-center px-6 border-b border-gray-200 dark:border-gray-700">
                         <div className="flex items-center">
-                            <Zap className="h-8 w-8 text-blue-600" />
+                            <img 
+                                src="/logo-removebg-preview.png" 
+                                alt="NITDA Logo" 
+                                className="h-8 w-8 object-contain"
+                            />
                             <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
                                 SRAP 2.0
                             </span>
@@ -189,7 +193,11 @@ function Sidebar({ isOpen, onClose, user }) {
                                 {/* Logo */}
                                 <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
                                     <div className="flex items-center">
-                                        <Zap className="h-8 w-8 text-blue-600" />
+                                        <img 
+                                            src="/logo-removebg-preview.png" 
+                                            alt="NITDA Logo" 
+                                            className="h-8 w-8 object-contain"
+                                        />
                                         <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
                                             SRAP 2.0
                                         </span>

@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { Users, UserPlus, Search, Filter, MoreHorizontal, Edit, Trash2, Shield } from 'lucide-react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -7,30 +7,37 @@ import { Button } from '@/Components/ui/Button';
 import { Badge } from '@/Components/ui/Badge';
 import { Input } from '@/Components/ui/Input';
 
-export default function AdminUsers() {
-    // Mock user data
-    const users = [
-        { id: 1, name: 'Abubakar Mohammed', email: 'abubakar@nitda.gov.ng', role: 'ai_developer', status: 'active', lastLogin: '2 hours ago' },
-        { id: 2, name: 'Fatima Hassan', email: 'fatima@nitda.gov.ng', role: 'researcher', status: 'active', lastLogin: '1 day ago' },
-        { id: 3, name: 'Ibrahim Yusuf', email: 'ibrahim@nitda.gov.ng', role: 'data_analyst', status: 'inactive', lastLogin: '3 days ago' },
-        { id: 4, name: 'Khadija Abdullahi', email: 'khadija@nitda.gov.ng', role: 'cybersecurity_specialist', status: 'active', lastLogin: '5 minutes ago' },
-        { id: 5, name: 'Musa Garba', email: 'musa@nitda.gov.ng', role: 'researcher', status: 'active', lastLogin: '1 hour ago' },
-    ];
+export default function AdminUsers({ users, departments, filters }) {
+    // Calculate stats from real data
+    const totalUsers = users.total || users.data?.length || 0;
+    const activeUsers = users.data?.filter(user => user.active !== false).length || 0;
+    const newThisMonth = users.data?.filter(user => {
+        const createdAt = new Date(user.created_at);
+        const now = new Date();
+        return createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
+    }).length || 0;
+    const adminUsers = users.data?.filter(user => user.role === 'admin').length || 0;
 
     const roleColors = {
         admin: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
-        researcher: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
+        strategy_team: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
+        department_user: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300',
         data_analyst: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
         cybersecurity_specialist: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300',
         ai_developer: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
+        hod: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300',
+        data_officer: 'bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-300',
     };
 
     const roleNames = {
         admin: 'Administrator',
-        researcher: 'Researcher',
+        strategy_team: 'Strategy Team',
+        department_user: 'Department User',
         data_analyst: 'Data Analyst',
         cybersecurity_specialist: 'Cybersecurity Specialist',
         ai_developer: 'AI Developer',
+        hod: 'Head of Department',
+        data_officer: 'Data Officer',
     };
 
     return (
@@ -55,10 +62,12 @@ export default function AdminUsers() {
                                 Manage system users, roles, and permissions
                             </p>
                         </div>
-                        <Button className="bg-blue-600 hover:bg-blue-700">
-                            <UserPlus className="w-4 h-4 mr-2" />
-                            Add User
-                        </Button>
+                        <Link href={route('admin.users.create')}>
+                            <Button className="bg-blue-600 hover:bg-blue-700">
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Add User
+                            </Button>
+                        </Link>
                     </div>
                 </motion.div>
 
@@ -74,7 +83,7 @@ export default function AdminUsers() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
-                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">156</p>
+                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalUsers}</p>
                                 </div>
                                 <Users className="w-8 h-8 text-blue-600" />
                             </div>
@@ -85,7 +94,7 @@ export default function AdminUsers() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Users</p>
-                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">142</p>
+                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{activeUsers}</p>
                                 </div>
                                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                             </div>
@@ -96,7 +105,7 @@ export default function AdminUsers() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">New This Month</p>
-                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">24</p>
+                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{newThisMonth}</p>
                                 </div>
                                 <UserPlus className="w-8 h-8 text-green-600" />
                             </div>
@@ -107,7 +116,7 @@ export default function AdminUsers() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Admin Users</p>
-                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">8</p>
+                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{adminUsers}</p>
                                 </div>
                                 <Shield className="w-8 h-8 text-red-600" />
                             </div>
@@ -152,12 +161,12 @@ export default function AdminUsers() {
                                             <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">User</th>
                                             <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Role</th>
                                             <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
-                                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Last Login</th>
+                                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Department</th>
                                             <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {users.map((user, index) => (
+                                        {users.data?.map((user, index) => (
                                             <motion.tr
                                                 key={user.id}
                                                 initial={{ opacity: 0, y: 20 }}
@@ -186,33 +195,50 @@ export default function AdminUsers() {
                                                 <td className="py-4 px-4">
                                                     <div className="flex items-center space-x-2">
                                                         <div className={`w-2 h-2 rounded-full ${
-                                                            user.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                                                            user.active !== false ? 'bg-green-500' : 'bg-gray-400'
                                                         }`}></div>
                                                         <span className={`text-sm font-medium ${
-                                                            user.status === 'active' 
+                                                            user.active !== false 
                                                                 ? 'text-green-700 dark:text-green-400' 
                                                                 : 'text-gray-500 dark:text-gray-400'
                                                         }`}>
-                                                            {user.status === 'active' ? 'Active' : 'Inactive'}
+                                                            {user.active !== false ? 'Active' : 'Inactive'}
                                                         </span>
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-4">
-                                                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                                                        {user.lastLogin}
-                                                    </span>
+                                                    <div>
+                                                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                            {user.department?.name || 'No Department'}
+                                                        </span>
+                                                        <br />
+                                                        <span className="text-xs text-gray-500 dark:text-gray-500">
+                                                            {new Date(user.created_at).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td className="py-4 px-4">
                                                     <div className="flex items-center space-x-2">
-                                                        <Button variant="ghost" size="icon">
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon">
-                                                            <Trash2 className="h-4 w-4 text-red-600" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                        </Button>
+                                                        <Link href={route('admin.users.edit', user.id)}>
+                                                            <Button variant="ghost" size="icon" title="Edit User">
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                        </Link>
+                                                        <Link 
+                                                            href={route('admin.users.destroy', user.id)} 
+                                                            method="delete"
+                                                            as="button"
+                                                            onBefore={() => confirm('Are you sure you want to delete this user?')}
+                                                        >
+                                                            <Button variant="ghost" size="icon" title="Delete User">
+                                                                <Trash2 className="h-4 w-4 text-red-600" />
+                                                            </Button>
+                                                        </Link>
+                                                        <Link href={route('admin.users.show', user.id)}>
+                                                            <Button variant="ghost" size="icon" title="View Details">
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </Link>
                                                     </div>
                                                 </td>
                                             </motion.tr>

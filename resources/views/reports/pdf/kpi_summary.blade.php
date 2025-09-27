@@ -16,6 +16,12 @@
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
+        .header .logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            display: block;
+        }
         .header h1 {
             color: #2563eb;
             margin: 0;
@@ -99,6 +105,7 @@
 </head>
 <body>
     <div class="header">
+        <img src="{{ public_path('logo-removebg-preview.png') }}" alt="NITDA Logo" class="logo">
         <h1>{{ $report->title }}</h1>
         <p>{{ $report->description }}</p>
         <p>Period: {{ $report->start_date->format('M d, Y') }} - {{ $report->end_date->format('M d, Y') }}</p>

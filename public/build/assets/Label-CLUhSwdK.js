@@ -1,0 +1,1 @@
+import{j as e}from"./ui--EPVQjIL.js";import{R as a}from"./inertia-Cj_WjKpf.js";const s=a.forwardRef(({className:a,...s},o)=>e.jsx("label",{ref:o,className:`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${a||""}`,...s}));s.displayName="Label";export{s as L};

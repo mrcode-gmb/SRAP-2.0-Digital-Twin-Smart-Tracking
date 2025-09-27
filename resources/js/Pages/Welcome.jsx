@@ -210,8 +210,12 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     animate={{ opacity: 1, x: 0 }}
                                     className="flex items-center space-x-3"
                                 >
-                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                                        <Globe className="w-6 h-6 text-white" />
+                                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1 shadow-sm">
+                                        <img 
+                                            src="/logo-removebg-preview.png" 
+                                            alt="NITDA Logo" 
+                                            className="w-8 h-8 object-contain"
+                                        />
                                     </div>
                                     <div>
                                         <h1 className="text-xl font-bold text-gray-900 dark:text-white">

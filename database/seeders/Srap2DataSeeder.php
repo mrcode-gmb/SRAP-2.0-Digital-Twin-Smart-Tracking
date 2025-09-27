@@ -15,6 +15,7 @@ class Srap2DataSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
+    {
         // Create SRAP 2.0 Pillars - Official 8 Pillars
         $pillars = [
             [

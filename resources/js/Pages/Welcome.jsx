@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { 
-    Activity, 
-    Shield, 
-    Users, 
-    BarChart3, 
-    Zap, 
+import {
+    Activity,
+    Shield,
+    Users,
+    BarChart3,
+    Zap,
     Globe,
     ArrowRight,
     CheckCircle,
@@ -132,31 +132,31 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
     ];
 
     const latestUpdates = [
-        { 
-            title: 'Broadband Infrastructure Report Uploaded', 
+        {
+            title: 'Broadband Infrastructure Report Uploaded',
             description: 'Q3 broadband penetration data analysis completed',
-            time: '15 minutes ago', 
+            time: '15 minutes ago',
             type: 'success',
             icon: Upload
         },
-        { 
-            title: 'AI Alert: Digital Literacy KPI at Risk', 
+        {
+            title: 'AI Alert: Digital Literacy KPI at Risk',
             description: 'Current progress 23% below target for Q4',
-            time: '1 hour ago', 
+            time: '1 hour ago',
             type: 'warning',
             icon: AlertTriangle
         },
-        { 
-            title: 'NITDA Strategic Meeting Reminder', 
+        {
+            title: 'NITDA Strategic Meeting Reminder',
             description: 'Monthly SRAP review meeting tomorrow at 10:00 AM',
-            time: '2 hours ago', 
+            time: '2 hours ago',
             type: 'info',
             icon: Calendar
         },
-        { 
-            title: 'Cybersecurity Compliance Check Completed', 
+        {
+            title: 'Cybersecurity Compliance Check Completed',
             description: 'All systems passed security audit successfully',
-            time: '4 hours ago', 
+            time: '4 hours ago',
             type: 'success',
             icon: Shield
         }
@@ -175,7 +175,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
     return (
         <>
             <Head title="SRAP 2.0 - Digital Twin Dashboard" />
-            
+
             <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark' : ''}`}>
                 {/* Animated Background */}
                 <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
@@ -211,9 +211,9 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     className="flex items-center space-x-3"
                                 >
                                     <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1 shadow-sm">
-                                        <img 
-                                            src="/logo-removebg-preview.png" 
-                                            alt="NITDA Logo" 
+                                        <img
+                                            src="/logo-removebg-preview.png"
+                                            alt="NITDA Logo"
                                             className="w-8 h-8 object-contain"
                                         />
                                     </div>
@@ -241,7 +241,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                         <Bell className="w-5 h-5" />
                                         <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
                                     </Button>
-                                    
+
                                     {/* Notifications Dropdown */}
                                     {showNotifications && (
                                         <motion.div
@@ -404,8 +404,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     About SRAP 2.0
                                 </h2>
                                 <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                                    Nigeria's Strategic Roadmap & Action Plan (SRAP) 2.0 Digital Twin is an innovative 
-                                    AI-powered platform designed to monitor, analyze, and optimize the implementation 
+                                    Nigeria's Strategic Roadmap & Action Plan (SRAP) 2.0 Digital Twin is an innovative
+                                    AI-powered platform designed to monitor, analyze, and optimize the implementation
                                     of Nigeria's digital transformation initiatives.
                                 </p>
                             </motion.div>
@@ -423,7 +423,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     </div>
                                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Mission</h3>
                                     <p className="text-gray-600 dark:text-gray-400">
-                                        To accelerate Nigeria's digital transformation through data-driven insights 
+                                        To accelerate Nigeria's digital transformation through data-driven insights
                                         and intelligent monitoring of strategic initiatives.
                                     </p>
                                 </motion.div>
@@ -440,7 +440,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     </div>
                                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Vision</h3>
                                     <p className="text-gray-600 dark:text-gray-400">
-                                        To position Nigeria as a leading digital economy in Africa through 
+                                        To position Nigeria as a leading digital economy in Africa through
                                         innovative technology solutions and strategic planning.
                                     </p>
                                 </motion.div>
@@ -457,7 +457,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     </div>
                                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Impact</h3>
                                     <p className="text-gray-600 dark:text-gray-400">
-                                        Empowering stakeholders with real-time analytics and AI-driven 
+                                        Empowering stakeholders with real-time analytics and AI-driven
                                         recommendations for optimal decision-making.
                                     </p>
                                 </motion.div>
@@ -479,7 +479,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     Key Features
                                 </h2>
                                 <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-                                    Discover the powerful capabilities that make SRAP 2.0 the ultimate 
+                                    Discover the powerful capabilities that make SRAP 2.0 the ultimate
                                     platform for digital transformation monitoring.
                                 </p>
                             </motion.div>
@@ -553,7 +553,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     Ready to Transform Nigeria's Digital Future?
                                 </h2>
                                 <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                                    Join the SRAP 2.0 Digital Twin platform and be part of Nigeria's 
+                                    Join the SRAP 2.0 Digital Twin platform and be part of Nigeria's
                                     digital transformation journey.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -600,7 +600,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     Get answers to common questions about SRAP 2.0 Digital Twin platform
                                 </p>
                             </div>
-                            
+
                             <div className="max-w-4xl mx-auto space-y-6">
                                 {[
                                     {
@@ -828,100 +828,107 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 </main>
 
                 {/* Footer */}
-                <footer className="bg-gray-900 text-white">
-                    <div className="container mx-auto px-6 py-12">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {/* Company Info */}
-                            <div className="space-y-4">
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                                        <Activity className="w-5 h-5 text-white" />
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.6 }}
+                    className='bg-gray-900 bg-gray-900'
+                >
+                    <footer className="relative z-10 bg-gray-900 text-white">
+                        <div className="container bg-gray-900 mx-auto px-6 py-12">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                {/* Company Info */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                            <Activity className="w-5 h-5 text-white" />
+                                        </div>
+                                        <span className="text-xl font-bold">SRAP 2.0</span>
                                     </div>
-                                    <span className="text-xl font-bold">SRAP 2.0</span>
+                                    <p className="text-gray-400 text-sm leading-relaxed">
+                                        Nigeria's Strategic Roadmap and Action Plan 2.0 Digital Twin - Driving digital transformation across the nation.
+                                    </p>
+                                    <div className="flex space-x-4">
+                                        <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                                            <Facebook className="w-5 h-5" />
+                                        </a>
+                                        <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                                            <Twitter className="w-5 h-5" />
+                                        </a>
+                                        <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                                            <Linkedin className="w-5 h-5" />
+                                        </a>
+                                        <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                                            <Youtube className="w-5 h-5" />
+                                        </a>
+                                    </div>
                                 </div>
-                                <p className="text-gray-400 text-sm leading-relaxed">
-                                    Nigeria's Strategic Roadmap and Action Plan 2.0 Digital Twin - Driving digital transformation across the nation.
-                                </p>
-                                <div className="flex space-x-4">
-                                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                                        <Facebook className="w-5 h-5" />
-                                    </a>
-                                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                                        <Twitter className="w-5 h-5" />
-                                    </a>
-                                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                                        <Linkedin className="w-5 h-5" />
-                                    </a>
-                                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                                        <Youtube className="w-5 h-5" />
-                                    </a>
+
+                                {/* Quick Links */}
+                                <div>
+                                    <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+                                    <ul className="space-y-2">
+                                        <li><Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors">Dashboard</Link></li>
+                                        <li><Link href="/login" className="text-gray-400 hover:text-white transition-colors">Login</Link></li>
+                                        <li><Link href="/register" className="text-gray-400 hover:text-white transition-colors">Register</Link></li>
+                                        <li><a href="#about" className="text-gray-400 hover:text-white transition-colors">About</a></li>
+                                        <li><a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a></li>
+                                        <li><a href="#contact" className="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                                    </ul>
+                                </div>
+
+                                {/* Resources */}
+                                <div>
+                                    <h3 className="text-lg font-semibold mb-4">Resources</h3>
+                                    <ul className="space-y-2">
+                                        <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                                        <li><a href="#" className="text-gray-400 hover:text-white transition-colors">API Reference</a></li>
+                                        <li><a href="#" className="text-gray-400 hover:text-white transition-colors">User Guide</a></li>
+                                        <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Training Materials</a></li>
+                                        <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Support Center</a></li>
+                                        <li><a href="#" className="text-gray-400 hover:text-white transition-colors">System Status</a></li>
+                                    </ul>
+                                </div>
+
+                                {/* Contact Info */}
+                                <div>
+                                    <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex items-start space-x-3">
+                                            <MapPin className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                                            <p className="text-gray-400 text-sm">
+                                                NITDA Headquarters<br />
+                                                Plot 28 Port Harcourt Crescent<br />
+                                                Area 11, Garki, Abuja
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center space-x-3">
+                                            <Phone className="w-5 h-5 text-gray-400" />
+                                            <p className="text-gray-400 text-sm">+234 9 461 0005</p>
+                                        </div>
+                                        <div className="flex items-center space-x-3">
+                                            <Mail className="w-5 h-5 text-gray-400" />
+                                            <p className="text-gray-400 text-sm">info@nitda.gov.ng</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Quick Links */}
-                            <div>
-                                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-                                <ul className="space-y-2">
-                                    <li><Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors">Dashboard</Link></li>
-                                    <li><Link href="/login" className="text-gray-400 hover:text-white transition-colors">Login</Link></li>
-                                    <li><Link href="/register" className="text-gray-400 hover:text-white transition-colors">Register</Link></li>
-                                    <li><a href="#about" className="text-gray-400 hover:text-white transition-colors">About</a></li>
-                                    <li><a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a></li>
-                                    <li><a href="#contact" className="text-gray-400 hover:text-white transition-colors">Contact</a></li>
-                                </ul>
-                            </div>
-
-                            {/* Resources */}
-                            <div>
-                                <h3 className="text-lg font-semibold mb-4">Resources</h3>
-                                <ul className="space-y-2">
-                                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">API Reference</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">User Guide</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Training Materials</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Support Center</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">System Status</a></li>
-                                </ul>
-                            </div>
-
-                            {/* Contact Info */}
-                            <div>
-                                <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
-                                <div className="space-y-3">
-                                    <div className="flex items-start space-x-3">
-                                        <MapPin className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                                        <p className="text-gray-400 text-sm">
-                                            NITDA Headquarters<br />
-                                            Plot 28 Port Harcourt Crescent<br />
-                                            Area 11, Garki, Abuja
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center space-x-3">
-                                        <Phone className="w-5 h-5 text-gray-400" />
-                                        <p className="text-gray-400 text-sm">+234 9 461 0005</p>
-                                    </div>
-                                    <div className="flex items-center space-x-3">
-                                        <Mail className="w-5 h-5 text-gray-400" />
-                                        <p className="text-gray-400 text-sm">info@nitda.gov.ng</p>
+                            <div className="border-t border-gray-800 mt-12 pt-8">
+                                <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                                    <p className="text-gray-400 text-sm">
+                                        © 2025 NITDA - National Information Technology Development Agency. All rights reserved.
+                                    </p>
+                                    <div className="flex space-x-6">
+                                        <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a>
+                                        <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</a>
+                                        <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Cookie Policy</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div className="border-t border-gray-800 mt-12 pt-8">
-                            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                                <p className="text-gray-400 text-sm">
-                                    © 2024 NITDA - National Information Technology Development Agency. All rights reserved.
-                                </p>
-                                <div className="flex space-x-6">
-                                    <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a>
-                                    <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</a>
-                                    <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Cookie Policy</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
+                    </footer>
+                </motion.section>
             </div>
         </>
     );

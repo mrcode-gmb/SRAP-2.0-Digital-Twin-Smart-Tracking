@@ -49,13 +49,17 @@ class AiPredictionController extends Controller
 
         $predictions = $query->orderBy('created_at', 'desc')->paginate(15);
 
-        // Get summary statistics based on prediction_result JSON
+        // Get summary statistics including risk level counts
         $stats = [
             'total_predictions' => AiPrediction::count(),
             'completed' => AiPrediction::where('status', 'completed')->count(),
             'pending' => AiPrediction::where('status', 'pending')->count(),
             'processing' => AiPrediction::where('status', 'processing')->count(),
             'failed' => AiPrediction::where('status', 'failed')->count(),
+            // Risk level counts (case-insensitive)
+            'high_risk' => AiPrediction::whereRaw('LOWER(risk_level) = ?', ['high'])->count(),
+            'medium_risk' => AiPrediction::whereRaw('LOWER(risk_level) = ?', ['medium'])->count(),
+            'low_risk' => AiPrediction::whereRaw('LOWER(risk_level) = ?', ['low'])->count(),
         ];
 
         // Transform predictions to include risk level from prediction_result JSON

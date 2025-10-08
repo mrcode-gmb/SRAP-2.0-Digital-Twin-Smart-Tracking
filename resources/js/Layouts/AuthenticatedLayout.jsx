@@ -62,11 +62,6 @@ function Sidebar({ isOpen, onClose, user }) {
         { name: 'Milestones', href: '/milestones', icon: Calendar },
         { name: 'SRAP Pillars', href: '/srap-pillars', icon: Layers },
         
-        // AI & Analytics
-        { name: 'AI Predictions', href: '/admin/ai-predictions', icon: Brain },
-        { name: 'Analytics', href: '/dashboard/analyst/analytics', icon: TrendingUp },
-        { name: 'Chatbot', href: '/admin/chatbot', icon: MessageSquare },
-        
         // Admin Features
         ...(user.role === 'admin' ? [
             { name: 'Alerts', href: '/admin/alerts', icon: AlertTriangle },
@@ -75,23 +70,8 @@ function Sidebar({ isOpen, onClose, user }) {
             { name: 'Data Upload', href: '/admin/progress-upload', icon: Upload },
             { name: 'Scenarios', href: '/admin/scenarios', icon: BarChart3 },
             { name: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
-        ] : []),
-        
-        // Role-specific features
-        ...(user.role === 'researcher' ? [
-            { name: 'Data Upload', href: '/dashboard/researcher/upload', icon: Database },
-            { name: 'Research Reports', href: '/dashboard/researcher/reports', icon: FileText },
-        ] : []),
-        ...(user.role === 'data_analyst' ? [
-            { name: 'KPI Reports', href: '/dashboard/analyst/kpi', icon: Database },
-        ] : []),
-        ...(user.role === 'cybersecurity_specialist' ? [
-            { name: 'Security Dashboard', href: '/dashboard/security/overview', icon: Shield },
-            { name: 'API Monitoring', href: '/dashboard/security/api', icon: Database },
-        ] : []),
-        ...(user.role === 'ai_developer' ? [
-            { name: 'AI Chatbot', href: '/dashboard/ai/chatbot', icon: Bot },
-            { name: 'AI Models', href: '/dashboard/ai/models', icon: Database },
+            { name: 'AI Predictions', href: '/admin/ai-predictions', icon: Brain },
+            { name: 'Chatbot', href: '/admin/chatbot', icon: MessageSquare },
         ] : []),
         
         // Data Officer Features

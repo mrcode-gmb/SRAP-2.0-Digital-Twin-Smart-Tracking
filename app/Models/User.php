@@ -104,15 +104,10 @@ class User extends Authenticatable
     {
         return match($this->role) {
             'admin' => 'Administrator',
-            'strategy_team' => 'Strategy Team',
-            'department_user' => 'Department User',
-            'researcher' => 'Researcher',
-            'data_analyst' => 'Data Analyst',
-            'cybersecurity_specialist' => 'Cybersecurity Specialist',
-            'ai_developer' => 'AI Developer',
             'data_officer' => 'Data Officer',
             'hod' => 'Head of Department',
-            default => 'User',
+            'staff' => 'Staff',
+            default => 'Staff',
         };
     }
 

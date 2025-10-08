@@ -21,10 +21,17 @@ class RoleMiddleware
 
         $user = auth()->user();
         
+        // Admin bypass only if route allows admin or no roles specified
+        if ($user->role === 'admin') {
+            if (empty($roles) || in_array('admin', $roles)) {
+                return $next($request);
+            }
+            // else fall through to normal role check (admin will be rejected if not listed)
+        }
+
         if (!$user->hasAnyRole($roles)) {
             abort(403, 'Unauthorized access. You do not have permission to access this resource.');
         }
-
         return $next($request);
     }
 }

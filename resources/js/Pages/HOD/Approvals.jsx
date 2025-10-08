@@ -3,50 +3,35 @@ import { Head, useForm, usePage, router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useToast } from '@/Contexts/ToastContext';
-import { 
-    CheckCircle, 
-    XCircle, 
-    Clock, 
-    User, 
-    Calendar, 
+import {
+    CheckCircle,
+    XCircle,
+    Clock,
+    User,
+    Calendar,
     FileText,
     AlertTriangle,
     Target,
     Database,
-    Eye
+    Eye,
+    Download
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/Card';
 import { Button } from '@/Components/ui/Button';
 import { Badge } from '@/Components/ui/Badge';
 import { Textarea } from '@/Components/ui/Textarea';
 
-export default function HODApprovals({ auth }) {
+export default function HODApprovals({ auth, pendingApprovals = [], department, stats }) {
     const { showSuccess, showError } = useToast();
-    const [pendingApprovals, setPendingApprovals] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [approvals, setApprovals] = useState(pendingApprovals);
+    const [loading, setLoading] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [selectedEntry, setSelectedEntry] = useState(null);
 
-    // Fetch pending approvals
+    // Update approvals when props change
     useEffect(() => {
-        fetchPendingApprovals();
-    }, []);
-
-    const fetchPendingApprovals = async () => {
-        try {
-            const response = await fetch('/admin/progress-upload/pending-approvals', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            });
-            const data = await response.json();
-            setPendingApprovals(data.data || []);
-        } catch (error) {
-            showError('Failed to fetch pending approvals');
-        } finally {
-            setLoading(false);
-        }
-    };
+        setApprovals(pendingApprovals);
+    }, [pendingApprovals]);
 
     const handleApprove = async (progressId) => {
         try {
@@ -59,12 +44,12 @@ export default function HODApprovals({ auth }) {
             });
             
             const result = await response.json();
-            
             if (response.ok) {
-                showSuccess('Progress entry approved successfully');
-                fetchPendingApprovals(); // Refresh the list
+                showSuccess(result.message || 'Upload approved successfully');
+                // Remove approved item from local state
+                setApprovals(prev => prev.filter(item => item.id !== progressId));
             } else {
-                showError(result.error || 'Failed to approve entry');
+                showError(result.error || 'Failed to approve upload');
             }
         } catch (error) {
             showError('Failed to approve entry');
@@ -92,23 +77,42 @@ export default function HODApprovals({ auth }) {
             const result = await response.json();
             
             if (response.ok) {
-                showSuccess('Progress entry rejected');
+                showSuccess(result.message || 'Upload rejected successfully');
+                // Remove rejected item from local state
+                setApprovals(prev => prev.filter(item => item.id !== selectedEntry.id));
                 setSelectedEntry(null);
                 setRejectionReason('');
-                fetchPendingApprovals(); // Refresh the list
             } else {
-                showError(result.error || 'Failed to reject entry');
+                showError(result.error || 'Failed to reject upload');
             }
         } catch (error) {
-            showError('Failed to reject entry');
+            showError('Failed to reject upload');
+        }
+    };
+
+    const handleDownload = (uploadId, filename) => {
+        try {
+            // Create a temporary link to download the file
+            const link = document.createElement('a');
+            link.href = `/admin/progress-upload/${uploadId}/download`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showSuccess('File download started');
+        } catch (error) {
+            showError('Failed to download file');
         }
     };
 
     const getStatusBadge = (status) => {
         const variants = {
             pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            verified: 'bg-green-100 text-green-800 border-green-200',
-            rejected: 'bg-red-100 text-red-800 border-red-200'
+            completed: 'bg-green-100 text-green-800 border-green-200',
+            rejected: 'bg-red-100 text-red-800 border-red-200',
+            processing: 'bg-blue-100 text-blue-800 border-blue-200',
+            failed: 'bg-red-100 text-red-800 border-red-200'
         };
         
         return variants[status] || variants.pending;
@@ -117,24 +121,23 @@ export default function HODApprovals({ auth }) {
     return (
         <AuthenticatedLayout user={auth.user}>
             <Head title="Pending Approvals - HOD Dashboard" />
-
             <div className="py-6">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="mb-8">
                         <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                    Pending Approvals
+                            <div className="text-center mb-8">
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                                    Pending Approvals - {stats?.department_name || 'Department'}
                                 </h1>
-                                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                                    Review and approve KPI progress submissions from your department
+                                <p className="text-gray-600 dark:text-gray-400">
+                                    Review and approve data uploads from your department ({stats?.total_pending || 0} pending)
                                 </p>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                                     <Clock className="w-4 h-4 mr-1" />
-                                    {pendingApprovals.length} Pending
+                                    {approvals.length} Pending
                                 </Badge>
                             </div>
                         </div>
@@ -150,7 +153,7 @@ export default function HODApprovals({ auth }) {
                                     </div>
                                     <div className="ml-4">
                                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Approval</p>
-                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{pendingApprovals.length}</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{approvals.length}</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -193,7 +196,7 @@ export default function HODApprovals({ auth }) {
                                 Submissions Requiring Approval
                             </CardTitle>
                             <CardDescription>
-                                Review KPI progress data submitted by Data Officers
+                                Review KPI progress data submitted by Data Officers. Download files to review content before approval.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -202,7 +205,7 @@ export default function HODApprovals({ auth }) {
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                                     <p className="mt-2 text-gray-600 dark:text-gray-400">Loading pending approvals...</p>
                                 </div>
-                            ) : pendingApprovals.length === 0 ? (
+                            ) : approvals.length === 0 ? (
                                 <div className="text-center py-8">
                                     <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
                                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -214,7 +217,7 @@ export default function HODApprovals({ auth }) {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {pendingApprovals.map((entry) => (
+                                    {approvals.map((entry) => (
                                         <motion.div
                                             key={entry.id}
                                             initial={{ opacity: 0, y: 20 }}
@@ -225,40 +228,50 @@ export default function HODApprovals({ auth }) {
                                                 <div className="flex-1">
                                                     <div className="flex items-center space-x-3 mb-2">
                                                         <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                                                            {entry.kpi?.name || 'KPI Progress Update'}
+                                                            {entry.original_filename || 'Data Upload'}
                                                         </h4>
-                                                        <Badge className={getStatusBadge(entry.verification_status)}>
-                                                            {entry.verification_status}
+                                                        <Badge className={getStatusBadge(entry.status)}>
+                                                            {entry.status}
                                                         </Badge>
                                                     </div>
                                                     
                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 dark:text-gray-400">
                                                         <div className="flex items-center">
                                                             <User className="w-4 h-4 mr-1" />
-                                                            {entry.reported_by?.name || 'Unknown'}
+                                                            {entry.uploader?.name || 'Unknown'}
                                                         </div>
                                                         <div className="flex items-center">
                                                             <Calendar className="w-4 h-4 mr-1" />
-                                                            {new Date(entry.reporting_date).toLocaleDateString()}
+                                                            {new Date(entry.created_at).toLocaleDateString()}
                                                         </div>
                                                         <div className="flex items-center">
                                                             <Target className="w-4 h-4 mr-1" />
-                                                            Value: {entry.value}
+                                                            Records: {entry.records_processed || 0}
                                                         </div>
                                                         <div className="flex items-center">
                                                             <Database className="w-4 h-4 mr-1" />
-                                                            {entry.source}
+                                                            {entry.file_type} ({entry.file_size_human || 'Unknown size'})
                                                         </div>
                                                     </div>
                                                     
-                                                    {entry.notes && (
-                                                        <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded text-sm">
-                                                            <strong>Notes:</strong> {entry.notes}
+                                                    {entry.errors_count > 0 && (
+                                                        <div className="mt-2 p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded text-sm">
+                                                            <strong>Errors:</strong> {entry.errors_count} errors found during processing
                                                         </div>
                                                     )}
                                                 </div>
                                                 
                                                 <div className="flex space-x-2 ml-4">
+                                                    <Button
+                                                        onClick={() => handleDownload(entry.id, entry.original_filename)}
+                                                        variant="outline"
+                                                        className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                                                        size="sm"
+                                                        title="Download file for review"
+                                                    >
+                                                        <Download className="w-4 h-4 mr-1" />
+                                                        Download
+                                                    </Button>
                                                     <Button
                                                         onClick={() => handleApprove(entry.id)}
                                                         className="bg-green-600 hover:bg-green-700 text-white"

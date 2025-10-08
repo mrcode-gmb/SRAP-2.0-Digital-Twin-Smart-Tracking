@@ -20,13 +20,20 @@ class UploadedFile extends Model
         'error_details',
         'processing_results',
         'uploaded_by',
-        'processed_at'
+        'processed_at',
+        'approved_by',
+        'approved_at',
+        'rejected_by',
+        'rejected_at',
+        'rejection_reason'
     ];
 
     protected $casts = [
         'error_details' => 'array',
         'processing_results' => 'array',
-        'processed_at' => 'datetime'
+        'processed_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime'
     ];
 
     public function uploader(): BelongsTo

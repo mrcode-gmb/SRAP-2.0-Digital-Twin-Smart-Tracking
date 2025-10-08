@@ -93,10 +93,9 @@ export default function EditUser({ user, departments }) {
                                         >
                                             <option value="">Select a role</option>
                                             <option value="admin">Administrator</option>
-                                            <option value="manager">Manager</option>
-                                            <option value="analyst">Data Analyst</option>
-                                            <option value="researcher">Researcher</option>
-                                            <option value="viewer">Viewer</option>
+                                            <option value="data_officer">Data Officer</option>
+                                            <option value="hod">Head of Department</option>
+                                            <option value="staff">Staff</option>
                                         </select>
                                         {errors.role && <p className="text-sm text-red-600">{errors.role}</p>}
                                     </div>

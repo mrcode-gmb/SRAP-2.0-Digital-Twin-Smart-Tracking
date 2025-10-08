@@ -26,7 +26,8 @@ import { Badge } from '@/Components/ui/Badge';
 
 export default function AdminProgressUpload({ uploads, filters = {} }) {
     const { showSuccess, showError, showWarning } = useToast();
-    const { flash } = usePage().props;
+    const { flash, auth } = usePage().props;
+    const role = auth?.user?.role;
     const [searchTerm, setSearchTerm] = useState(filters?.search || '');
     const [selectedType, setSelectedType] = useState(filters?.type || '');
     const [selectedStatus, setSelectedStatus] = useState(filters?.status || '');
@@ -144,12 +145,14 @@ export default function AdminProgressUpload({ uploads, filters = {} }) {
                                 <Download className="w-4 h-4 mr-2" />
                                 KPI Template
                             </Button>
-                            <Link href="/admin/progress-upload/create">
-                                <Button className="flex items-center gap-2">
-                                    <Plus className="w-4 h-4" />
-                                    Upload Data
-                                </Button>
-                            </Link>
+                            {(role === 'data_officer' || role === 'staff') && (
+                                <Link href="/admin/progress-upload/create">
+                                    <Button className="flex items-center gap-2">
+                                        <Plus className="w-4 h-4" />
+                                        Upload Data
+                                    </Button>
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </motion.div>
@@ -371,12 +374,14 @@ export default function AdminProgressUpload({ uploads, filters = {} }) {
                         <p className="text-gray-600 dark:text-gray-400 mb-6">
                             Upload your first data file to update KPI progress.
                         </p>
-                        <Link href="/admin/progress-upload/create">
-                            <Button>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Upload First File
-                            </Button>
-                        </Link>
+                        {(role === 'data_officer' || role === 'staff') && (
+                            <Link href="/admin/progress-upload/create">
+                                <Button>
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Upload First File
+                                </Button>
+                            </Link>
+                        )}
                     </motion.div>
                 )}
 

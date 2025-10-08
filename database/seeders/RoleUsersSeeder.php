@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Department;
 
 class RoleUsersSeeder extends Seeder
 {
@@ -14,7 +15,12 @@ class RoleUsersSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create sample users for each role
+        // Pick a default department for sample users (INFRA preferred)
+        $defaultDept = Department::where('code', 'INFRA')->first()
+            ?? Department::first();
+        $defaultDeptId = $defaultDept?->id;
+
+        // Create sample users for supported roles only
         $users = [
             [
                 'name' => 'Admin User',
@@ -24,48 +30,48 @@ class RoleUsersSeeder extends Seeder
                 'email_verified_at' => now(),
             ],
             [
-                'name' => 'Research Specialist',
-                'email' => 'researcher@nitda.gov.ng',
+                'name' => 'Data Officer',
+                'email' => 'dataofficer@nitda.gov.ng',
                 'password' => Hash::make('password123'),
-                'role' => 'researcher',
+                'role' => 'data_officer',
                 'email_verified_at' => now(),
             ],
             [
-                'name' => 'Data Analyst',
-                'email' => 'analyst@nitda.gov.ng',
+                'name' => 'Head of Department',
+                'email' => 'hod@nitda.gov.ng',
                 'password' => Hash::make('password123'),
-                'role' => 'data_analyst',
+                'role' => 'hod',
                 'email_verified_at' => now(),
             ],
             [
-                'name' => 'Security Expert',
-                'email' => 'security@nitda.gov.ng',
+                'name' => 'Staff User',
+                'email' => 'staff@nitda.gov.ng',
                 'password' => Hash::make('password123'),
-                'role' => 'cybersecurity_specialist',
-                'email_verified_at' => now(),
-            ],
-            [
-                'name' => 'AI Developer',
-                'email' => 'ai@nitda.gov.ng',
-                'password' => Hash::make('password123'),
-                'role' => 'ai_developer',
+                'role' => 'staff',
                 'email_verified_at' => now(),
             ],
         ];
 
         foreach ($users as $userData) {
-            User::firstOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $userData['email']],
                 $userData
             );
+
+            // Assign department to DO/HOD/Staff if available
+            if ($defaultDeptId && in_array($user->role, ['data_officer', 'hod', 'staff'])) {
+                if ($user->department_id !== $defaultDeptId) {
+                    $user->department_id = $defaultDeptId;
+                    $user->save();
+                }
+            }
         }
 
         $this->command->info('Sample users created successfully!');
         $this->command->info('Login credentials:');
         $this->command->info('Admin: admin@nitda.gov.ng / password123');
-        $this->command->info('Researcher: researcher@nitda.gov.ng / password123');
-        $this->command->info('Data Analyst: analyst@nitda.gov.ng / password123');
-        $this->command->info('Security: security@nitda.gov.ng / password123');
-        $this->command->info('AI Developer: ai@nitda.gov.ng / password123');
+        $this->command->info('Data Officer: dataofficer@nitda.gov.ng / password123');
+        $this->command->info('HOD: hod@nitda.gov.ng / password123');
+        $this->command->info('Staff: staff@nitda.gov.ng / password123');
     }
 }

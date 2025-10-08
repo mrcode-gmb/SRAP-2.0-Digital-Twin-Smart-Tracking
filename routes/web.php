@@ -28,45 +28,16 @@ Route::get('/', function () {
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
-// Admin Routes
+// Admin Routes (dashboard settings only)
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('dashboard/admin')->group(function () {
-    // User Management Routes
-    Route::resource('users', App\Http\Controllers\Admin\UserManagementController::class)->names([
-        'index' => 'admin.users.index',
-        'create' => 'admin.users.create',
-        'store' => 'admin.users.store',
-        'show' => 'admin.users.show',
-        'edit' => 'admin.users.edit',
-        'update' => 'admin.users.update',
-        'destroy' => 'admin.users.destroy'
-    ]);
-    
     Route::get('/settings', function () {
         return Inertia::render('Admin/Settings');
     })->name('admin.settings');
 });
 
-// Researcher Routes
-Route::middleware(['auth', 'verified', 'role:researcher'])->prefix('dashboard/researcher')->group(function () {
-    Route::get('/upload', function () {
-        return Inertia::render('Researcher/Upload');
-    })->name('researcher.upload');
-    
-    Route::get('/reports', function () {
-        return Inertia::render('Researcher/Reports');
-    })->name('researcher.reports');
-});
+// Researcher routes removed (role retired)
 
-// Data Analyst Routes
-Route::middleware(['auth', 'verified', 'role:data_analyst'])->prefix('dashboard/analyst')->group(function () {
-    Route::get('/analytics', function () {
-        return Inertia::render('Analyst/Analytics');
-    })->name('analyst.analytics');
-    
-    Route::get('/kpi', function () {
-        return Inertia::render('Analyst/KPI');
-    })->name('analyst.kpi');
-});
+// Data Analyst routes removed (role retired)
 
 // General authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -125,92 +96,71 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{id}', [ScenarioSimulationController::class, 'destroy'])->name('destroy');
     });
 
-    // Admin Routes
+    // Admin Routes (split by permissions)
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::resource('alerts', AlertController::class);
-        Route::post('alerts/{alert}/acknowledge', [AlertController::class, 'acknowledge'])->name('alerts.acknowledge');
-        Route::post('alerts/mark-read', [AlertController::class, 'markMultipleAsRead'])->name('alerts.mark-read');
-        Route::get('alerts/unread-count', [AlertController::class, 'getUnreadCount'])->name('alerts.unread-count');
-        
-        Route::resource('reports', ReportController::class);
-        Route::get('reports/{report}/download/{format}', [ReportController::class, 'download'])->name('reports.download');
-        Route::post('reports/{report}/regenerate', [ReportController::class, 'regenerate'])->name('reports.regenerate');
-        
-        Route::resource('chatbot', ChatbotController::class);
-        Route::post('chatbot/message', [ChatbotController::class, 'processMessage'])->name('chatbot.message');
-        Route::post('chatbot/{conversation}/feedback', [ChatbotController::class, 'submitFeedback'])->name('chatbot.feedback');
-        
-        Route::resource('users', UserManagementController::class);
-        Route::post('users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
-        Route::post('users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
-        Route::post('users/bulk-action', [UserManagementController::class, 'bulkAction'])->name('users.bulk-action');
-        
-        Route::resource('kpis', KpiController::class);
-        Route::post('kpis/{kpi}/update-progress', [KpiController::class, 'updateProgress'])->name('kpis.update-progress');
-        
-        Route::resource('progress-upload', ProgressUploadController::class);
-        Route::get('progress-upload/template/{type}', [ProgressUploadController::class, 'downloadTemplate'])->name('progress-upload.template');
-        Route::post('progress-upload/process', [ProgressUploadController::class, 'processUpload'])->name('progress-upload.process');
-        Route::post('progress-upload/{progress}/approve', [ProgressUploadController::class, 'approveProgress'])->name('progress-upload.approve');
-        Route::post('progress-upload/{progress}/reject', [ProgressUploadController::class, 'rejectProgress'])->name('progress-upload.reject');
-        Route::get('progress-upload/pending-approvals', [ProgressUploadController::class, 'getPendingApprovals'])->name('progress-upload.pending-approvals');
-        
-        Route::resource('scenarios', ScenarioSimulationController::class);
-        Route::post('scenarios/simulate', [ScenarioSimulationController::class, 'simulate'])->name('scenarios.simulate');
-        Route::post('scenarios/compare', [ScenarioSimulationController::class, 'compare'])->name('scenarios.compare');
-        Route::get('scenarios/{simulation}/export/{format?}', [ScenarioSimulationController::class, 'export'])->name('scenarios.export');
-        
-        // AI Predictions specific routes (must be before resource routes)
-        Route::get('ai-predictions/template', [\App\Http\Controllers\Admin\AiPredictionController::class, 'downloadTemplate'])->name('ai-predictions.template');
-        Route::get('ai-predictions/export', [\App\Http\Controllers\Admin\AiPredictionController::class, 'export'])->name('ai-predictions.export');
-        Route::post('ai-predictions/bulk', [\App\Http\Controllers\Admin\AiPredictionController::class, 'bulkPredict'])->name('ai-predictions.bulk');
-        
-        Route::resource('ai-predictions', \App\Http\Controllers\Admin\AiPredictionController::class);
+        // Admin-only features
+        Route::middleware('role:admin')->group(function () {
+            Route::resource('alerts', AlertController::class);
+            Route::post('alerts/{alert}/acknowledge', [AlertController::class, 'acknowledge'])->name('alerts.acknowledge');
+            Route::post('alerts/mark-read', [AlertController::class, 'markMultipleAsRead'])->name('alerts.mark-read');
+            Route::get('alerts/unread-count', [AlertController::class, 'getUnreadCount'])->name('alerts.unread-count');
+
+            Route::resource('reports', ReportController::class);
+            Route::get('reports/{report}/download/{format}', [ReportController::class, 'download'])->name('reports.download');
+            Route::post('reports/{report}/regenerate', [ReportController::class, 'regenerate'])->name('reports.regenerate');
+
+            Route::resource('chatbot', ChatbotController::class);
+            Route::post('chatbot/message', [ChatbotController::class, 'processMessage'])->name('chatbot.message');
+            Route::post('chatbot/{conversation}/feedback', [ChatbotController::class, 'submitFeedback'])->name('chatbot.feedback');
+
+            Route::resource('users', UserManagementController::class);
+            Route::post('users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
+            Route::post('users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
+            Route::post('users/bulk-action', [UserManagementController::class, 'bulkAction'])->name('users.bulk-action');
+
+            Route::resource('kpis', KpiController::class);
+            Route::post('kpis/{kpi}/update-progress', [KpiController::class, 'updateProgress'])->name('kpis.update-progress');
+
+            Route::resource('scenarios', ScenarioSimulationController::class);
+            Route::post('scenarios/simulate', [ScenarioSimulationController::class, 'simulate'])->name('scenarios.simulate');
+            Route::post('scenarios/compare', [ScenarioSimulationController::class, 'compare'])->name('scenarios.compare');
+            Route::get('scenarios/{simulation}/export/{format?}', [ScenarioSimulationController::class, 'export'])->name('scenarios.export');
+
+            // AI Predictions specific routes (must be before resource routes)
+            Route::get('ai-predictions/template', [\App\Http\Controllers\Admin\AiPredictionController::class, 'downloadTemplate'])->name('ai-predictions.template');
+            Route::get('ai-predictions/export', [\App\Http\Controllers\Admin\AiPredictionController::class, 'export'])->name('ai-predictions.export');
+            Route::post('ai-predictions/bulk', [\App\Http\Controllers\Admin\AiPredictionController::class, 'bulkPredict'])->name('ai-predictions.bulk');
+            Route::resource('ai-predictions', \App\Http\Controllers\Admin\AiPredictionController::class);
+        });
+
+        // Shared with Admin, Data Officers, HODs, and Staff (with finer-grained restrictions inside)
+        Route::middleware('role:admin,data_officer,hod,staff')->group(function () {
+            Route::resource('progress-upload', ProgressUploadController::class);
+            Route::get('progress-upload/template/{type}', [ProgressUploadController::class, 'downloadTemplate'])->name('progress-upload.template');
+            Route::post('progress-upload/process', [ProgressUploadController::class, 'processUpload'])->name('progress-upload.process')->middleware('role:data_officer,staff');
+            Route::post('progress-upload/{progress}/approve', [ProgressUploadController::class, 'approveProgress'])->name('progress-upload.approve');
+            Route::post('progress-upload/{progress}/reject', [ProgressUploadController::class, 'rejectProgress'])->name('progress-upload.reject');
+            Route::get('progress-upload/pending-approvals', [ProgressUploadController::class, 'getPendingApprovals'])->name('progress-upload.pending-approvals');
+            Route::get('progress-upload/{upload}/download', [ProgressUploadController::class, 'downloadFile'])->name('progress-upload.download')->middleware('role:hod');
+            // DO/Staff only: create & store
+            Route::get('progress-upload/create', [ProgressUploadController::class, 'create'])->name('progress-upload.create')->middleware('role:data_officer,staff');
+            Route::post('progress-upload', [ProgressUploadController::class, 'store'])->name('progress-upload.store')->middleware('role:data_officer,staff');
+        });
     });
 });
 
-// Cybersecurity Specialist Routes
-Route::middleware(['auth', 'verified', 'role:cybersecurity_specialist'])->prefix('dashboard/security')->group(function () {
-    Route::get('/overview', function () {
-        return Inertia::render('Security/Overview');
-    })->name('security.overview');
-    
-    Route::get('/api', function () {
-        return Inertia::render('Security/API');
-    })->name('security.api');
-});
-
-// AI Developer Routes
-Route::middleware(['auth', 'verified', 'role:ai_developer'])->prefix('dashboard/ai')->group(function () {
-    Route::get('/chatbot', function () {
-        return Inertia::render('AI/Chatbot');
-    })->name('ai.chatbot');
-    
-    Route::get('/models', function () {
-        return Inertia::render('AI/Models');
-    })->name('ai.models');
-});
+// Security and AI Developer routes removed (roles retired)
 
 // Data Officer Routes
 Route::middleware(['auth', 'verified', 'role:data_officer'])->prefix('dashboard/data-officer')->group(function () {
-    Route::get('/upload', function () {
-        return Inertia::render('DataOfficer/Upload');
-    })->name('data-officer.upload');
-    
-    Route::get('/reports', function () {
-        return Inertia::render('DataOfficer/Reports');
-    })->name('data-officer.reports');
+    Route::get('/upload', [\App\Http\Controllers\DataOfficer\DataOfficerController::class, 'upload'])->name('data-officer.upload');
+    Route::get('/reports', [\App\Http\Controllers\DataOfficer\DataOfficerController::class, 'reports'])->name('data-officer.reports');
 });
 
 // HOD Routes
-Route::middleware(['auth', 'verified'])->prefix('dashboard/hod')->group(function () {
-    Route::get('/approvals', function () {
-        return Inertia::render('HOD/Approvals');
-    })->name('hod.approvals');
-    
-    Route::get('/department-overview', function () {
-        return Inertia::render('HOD/DepartmentOverview');
-    })->name('hod.department-overview');
+Route::middleware(['auth', 'verified', 'role:hod'])->prefix('dashboard/hod')->group(function () {
+    Route::get('/approvals', [\App\Http\Controllers\HOD\HODController::class, 'approvals'])->name('hod.approvals');
+    Route::get('/department-overview', [\App\Http\Controllers\HOD\HODController::class, 'departmentOverview'])->name('hod.department-overview');
 });
 
 // Error Routes

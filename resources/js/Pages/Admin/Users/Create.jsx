@@ -113,13 +113,9 @@ export default function CreateUser({ departments }) {
                                         >
                                             <option value="">Select a role</option>
                                             <option value="admin">Administrator</option>
-                                            <option value="strategy_team">Strategy Team</option>
-                                            <option value="department_user">Department User</option>
-                                            <option value="data_analyst">Data Analyst</option>
-                                            <option value="cybersecurity_specialist">Cybersecurity Specialist</option>
-                                            <option value="ai_developer">AI Developer</option>
-                                            <option value="hod">Head of Department</option>
                                             <option value="data_officer">Data Officer</option>
+                                            <option value="hod">Head of Department</option>
+                                            <option value="staff">Staff</option>
                                         </select>
                                         {errors.role && <p className="text-sm text-red-600">{errors.role}</p>}
                                     </div>

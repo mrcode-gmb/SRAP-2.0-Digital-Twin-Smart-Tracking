@@ -24,6 +24,18 @@ class ProgressUploadController extends Controller
     {
         $query = UploadedFile::with('uploader');
 
+        // Role-based visibility
+        $user = Auth::user();
+        if ($user->role === 'hod') {
+            // HOD: see uploads from users in their department
+            $query->whereHas('uploader', function($q) use ($user) {
+                $q->where('department_id', $user->department_id);
+            });
+        } elseif (in_array($user->role, ['data_officer', 'staff'])) {
+            // Data Officer/Staff: see only own uploads
+            $query->where('uploaded_by', $user->id);
+        }
+
         // Apply search filter
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
@@ -95,9 +107,12 @@ class ProgressUploadController extends Controller
             // Process the file
             $results = $this->processUploadedFile($file, $type, $overwriteExisting);
             
+            // Determine file status based on role and type
+            $shouldPending = in_array(Auth::user()->role, ['data_officer', 'staff']) && $type === 'kpi_progress';
+
             // Update the uploaded file record with results
             $uploadedFile->update([
-                'status' => 'completed',
+                'status' => 'pending',
                 'records_processed' => $results['success'],
                 'errors_count' => $results['errors'],
                 'error_details' => $results['error_details'],
@@ -340,7 +355,7 @@ class ProgressUploadController extends Controller
         $source = $row[$headerMap['Source']] ?? 'excel_upload';
         
         // Add approval status for workflow
-        $needsApproval = Auth::user()->role === 'data_officer';
+        $needsApproval = in_array(Auth::user()->role, ['data_officer', 'staff']);
 
         // Validate required fields
         if (!$kpiId || !$reportingDate || $currentValue === null) {
@@ -351,6 +366,11 @@ class ProgressUploadController extends Controller
         $kpi = Kpis::find($kpiId);
         if (!$kpi) {
             throw new \Exception("KPI with ID {$kpiId} not found");
+        }
+
+        // Department restriction: Data Officer/Staff can only upload for their department
+        if (in_array(Auth::user()->role, ['data_officer', 'staff']) && $kpi->department_id !== Auth::user()->department_id) {
+            throw new \Exception('You can only upload KPI progress for KPIs in your department.');
         }
 
         // Parse date
@@ -424,6 +444,14 @@ class ProgressUploadController extends Controller
         $milestone = Milestone::find($milestoneId);
         if (!$milestone) {
             throw new \Exception("Milestone with ID {$milestoneId} not found");
+        }
+
+        // Department restriction: Data Officer/Staff can only upload for their department
+        if (in_array(Auth::user()->role, ['data_officer', 'staff'])) {
+            $milestoneKpi = $milestone->kpi; // relation defined on model
+            if ($milestoneKpi && $milestoneKpi->department_id !== Auth::user()->department_id) {
+                throw new \Exception('You can only upload milestone updates for KPIs in your department.');
+            }
         }
 
         // Validate completion percentage
@@ -530,7 +558,7 @@ class ProgressUploadController extends Controller
             'file_type' => $type,
             'mime_type' => $file->getMimeType(),
             'file_size' => $file->getSize(),
-            'status' => 'processing',
+            'status' => 'pending',
             'uploaded_by' => Auth::id()
         ]);
     }
@@ -635,100 +663,207 @@ class ProgressUploadController extends Controller
     }
 
     /**
-     * Approve KPI progress entry (for HOD role)
+     * Approve uploaded file and its KPI progress entries (for HOD role)
      */
-    public function approveProgress(Request $request, $progressId)
+    public function approveProgress(Request $request, $uploadId)
     {
         $user = Auth::user();
         
-        // Check if user has approval rights
-        if (!in_array($user->role, ['hod', 'admin'])) {
+        // Only HOD can approve
+        if ($user->role !== 'hod') {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $progress = KpiProgress::findOrFail($progressId);
+        $uploadedFile = UploadedFile::with('uploader')->findOrFail($uploadId);
         
-        // Check if user can approve this progress (same department or admin)
-        if ($user->role === 'hod' && $progress->kpi->department_id !== $user->department_id) {
-            return response()->json(['error' => 'Can only approve progress for your department'], 403);
+        // Check if user can approve this upload (same department)
+        if ($uploadedFile->uploader->department_id !== $user->department_id) {
+            return response()->json(['error' => 'Can only approve uploads from your department'], 403);
         }
 
-        $progress->update([
-            'verified_by' => $user->id,
-            'verification_status' => 'verified',
-            'verified_at' => now()
+        // Update the uploaded file status to completed
+        $uploadedFile->update([
+            'status' => 'completed',
+            'approved_by' => $user->id,
+            'approved_at' => now()
         ]);
 
-        // Update KPI current value if this is the latest verified entry
-        $latestProgress = KpiProgress::where('kpi_id', $progress->kpi_id)
-            ->where('verification_status', 'verified')
-            ->orderBy('reporting_date', 'desc')
-            ->first();
+        // Find and approve all related KPI progress entries from this upload
+        $kpiProgressEntries = KpiProgress::where('verification_status', 'pending')
+            ->where('source', 'excel_upload')
+            ->where('reported_by', $uploadedFile->uploaded_by)
+            ->whereDate('created_at', $uploadedFile->created_at->toDateString())
+            ->get();
 
-        if ($latestProgress && $latestProgress->id === $progress->id) {
-            $progress->kpi->update(['current_value' => $progress->value]);
+        foreach ($kpiProgressEntries as $progress) {
+            $progress->update([
+                'verified_by' => $user->id,
+                'verification_status' => 'verified',
+                'verified_at' => now()
+            ]);
+
+            // Update KPI current value if this is the latest verified entry
+            $latestProgress = KpiProgress::where('kpi_id', $progress->kpi_id)
+                ->where('verification_status', 'verified')
+                ->orderBy('reporting_date', 'desc')
+                ->first();
+
+            if ($latestProgress && $latestProgress->id === $progress->id) {
+                $progress->kpi->update(['current_value' => $progress->value]);
+            }
         }
 
-        return response()->json(['message' => 'Progress approved successfully']);
+        return response()->json([
+            'message' => 'Upload approved successfully', 
+            'approved_entries' => $kpiProgressEntries->count()
+        ]);
     }
 
     /**
-     * Reject KPI progress entry
+     * Reject uploaded file and its KPI progress entries
      */
-    public function rejectProgress(Request $request, $progressId)
+    public function rejectProgress(Request $request, $uploadId)
     {
-        $user = Auth::user();
-        
-        // Check if user has approval rights
-        if (!in_array($user->role, ['hod', 'admin'])) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        try {
+            $user = Auth::user();
+            
+            \Log::info('Reject request received', [
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'upload_id' => $uploadId,
+                'request_data' => $request->all()
+            ]);
+            
+            // Only HOD can reject
+            if ($user->role !== 'hod') {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
 
         $validated = $request->validate([
             'rejection_reason' => 'required|string|max:500'
         ]);
 
-        $progress = KpiProgress::findOrFail($progressId);
+        $uploadedFile = UploadedFile::with('uploader')->findOrFail($uploadId);
         
-        // Check if user can reject this progress (same department or admin)
-        if ($user->role === 'hod' && $progress->kpi->department_id !== $user->department_id) {
-            return response()->json(['error' => 'Can only reject progress for your department'], 403);
+        // Check if user can reject this upload (same department)
+        if ($uploadedFile->uploader->department_id !== $user->department_id) {
+            return response()->json(['error' => 'Can only reject uploads from your department'], 403);
         }
 
-        $progress->update([
-            'verified_by' => $user->id,
-            'verification_status' => 'rejected',
-            'verified_at' => now(),
+        // Update the uploaded file status to rejected
+        $uploadedFile->update([
+            'status' => 'failed',
+            'rejected_by' => $user->id,
+            'rejected_at' => now(),
             'rejection_reason' => $validated['rejection_reason']
         ]);
 
-        return response()->json(['message' => 'Progress rejected successfully']);
+        // Find and reject all related KPI progress entries from this upload
+        $kpiProgressEntries = KpiProgress::where('verification_status', 'pending')
+            ->where('source', 'excel_upload')
+            ->where('reported_by', $uploadedFile->uploaded_by)
+            ->whereDate('created_at', $uploadedFile->created_at->toDateString())
+            ->get();
+
+        foreach ($kpiProgressEntries as $progress) {
+            $progress->update([
+                'verified_by' => $user->id,
+                'verification_status' => 'rejected',
+                'verified_at' => now(),
+                'rejection_reason' => $validated['rejection_reason']
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Upload rejected successfully',
+            'rejected_entries' => $kpiProgressEntries->count()
+        ]);
+        
+        } catch (\Exception $e) {
+            \Log::error('Error rejecting upload', [
+                'upload_id' => $uploadId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Failed to reject upload: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Get pending approvals for HOD
+     * Get pending uploaded files for HOD approval
      */
     public function getPendingApprovals()
     {
         $user = Auth::user();
         
+        // Allow HOD and Admin access
         if (!in_array($user->role, ['hod', 'admin'])) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $query = KpiProgress::with(['kpi', 'reportedBy'])
-            ->where('verification_status', 'pending');
+        $query = UploadedFile::with(['uploader'])
+            ->where('status', 'pending')
+            ->where('file_type', 'kpi_progress'); // Only KPI progress uploads need approval
 
-        // Filter by department for HOD
+        // Filter by department for HOD - only see uploads from users in their department
         if ($user->role === 'hod') {
-            $query->whereHas('kpi', function($q) use ($user) {
+            $query->whereHas('uploader', function($q) use ($user) {
                 $q->where('department_id', $user->department_id);
             });
         }
 
         $pendingApprovals = $query->orderBy('created_at', 'desc')->paginate(15);
 
+        // Transform the data to include additional info for the frontend
+        $pendingApprovals->getCollection()->transform(function ($upload) {
+            return [
+                'id' => $upload->id,
+                'original_filename' => $upload->original_filename,
+                'file_type' => $upload->file_type,
+                'records_processed' => $upload->records_processed,
+                'errors_count' => $upload->errors_count,
+                'status' => $upload->status,
+                'created_at' => $upload->created_at,
+                'uploader' => [
+                    'id' => $upload->uploader->id,
+                    'name' => $upload->uploader->name,
+                    'email' => $upload->uploader->email,
+                ],
+                'processing_results' => $upload->processing_results,
+            ];
+        });
+
         return response()->json($pendingApprovals);
+    }
+
+    /**
+     * Download uploaded file for review (HOD only)
+     */
+    public function downloadFile($uploadId)
+    {
+        $user = Auth::user();
+        
+        // Only HOD can download for review
+        if ($user->role !== 'hod') {
+            abort(403, 'Unauthorized access');
+        }
+
+        $uploadedFile = UploadedFile::with('uploader')->findOrFail($uploadId);
+        
+        // Check if HOD can access this file (same department)
+        if ($uploadedFile->uploader->department_id !== $user->department_id) {
+            abort(403, 'Can only download files from your department');
+        }
+
+        // Check if file exists
+        if (!Storage::exists($uploadedFile->file_path)) {
+            abort(404, 'File not found');
+        }
+
+        return Storage::download($uploadedFile->file_path, $uploadedFile->original_filename);
     }
 
     /**

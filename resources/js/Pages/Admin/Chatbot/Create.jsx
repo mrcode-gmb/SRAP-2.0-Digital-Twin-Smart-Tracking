@@ -68,7 +68,7 @@ export default function Create({ auth, userConversations }) {
                     session_id: sessionId
                 }),
                 credentials: 'same-origin'
-            });
+            });npm 
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

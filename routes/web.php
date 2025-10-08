@@ -109,9 +109,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('reports/{report}/download/{format}', [ReportController::class, 'download'])->name('reports.download');
             Route::post('reports/{report}/regenerate', [ReportController::class, 'regenerate'])->name('reports.regenerate');
 
-            Route::resource('chatbot', ChatbotController::class);
-            Route::post('chatbot/message', [ChatbotController::class, 'processMessage'])->name('chatbot.message');
-            Route::post('chatbot/{conversation}/feedback', [ChatbotController::class, 'submitFeedback'])->name('chatbot.feedback');
 
             Route::resource('users', UserManagementController::class);
             Route::post('users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
@@ -135,6 +132,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Shared with Admin, Data Officers, HODs, and Staff (with finer-grained restrictions inside)
         Route::middleware('role:admin,data_officer,hod,staff')->group(function () {
+            // Chatbot routes - accessible to all authenticated users
+            Route::resource('chatbot', ChatbotController::class);
+            Route::post('chatbot/message', [ChatbotController::class, 'processMessage'])->name('chatbot.message');
+            Route::get('chatbot/history/{session_id}', [ChatbotController::class, 'getHistory'])->name('chatbot.history');
+            Route::post('chatbot/{conversation}/feedback', [ChatbotController::class, 'submitFeedback'])->name('chatbot.feedback');
+            
             Route::resource('progress-upload', ProgressUploadController::class);
             Route::get('progress-upload/template/{type}', [ProgressUploadController::class, 'downloadTemplate'])->name('progress-upload.template');
             Route::post('progress-upload/process', [ProgressUploadController::class, 'processUpload'])->name('progress-upload.process')->middleware('role:data_officer,staff');
@@ -150,6 +153,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Security and AI Developer routes removed (roles retired)
+
+// AI Chatbot Routes - accessible to all authenticated users
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/ai/chatbot', function () {
+        return Inertia::render('AI/Chatbot');
+    })->name('ai.chatbot');
+});
 
 // Data Officer Routes
 Route::middleware(['auth', 'verified', 'role:data_officer'])->prefix('dashboard/data-officer')->group(function () {

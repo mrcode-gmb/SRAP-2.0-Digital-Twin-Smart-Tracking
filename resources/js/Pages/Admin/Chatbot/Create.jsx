@@ -15,12 +15,13 @@ import {
     CheckCircle
 } from 'lucide-react';
 
-export default function Create({ auth }) {
+export default function Create({ auth, userConversations }) {
     const { props } = usePage();
     const [message, setMessage] = useState('');
     const [conversation, setConversation] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [sessionId, setSessionId] = useState(null);
+    const [selectedSession, setSelectedSession] = useState(null);
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -40,8 +41,18 @@ export default function Create({ auth }) {
         };
         setConversation(prev => [...prev, newUserMessage]);
 
-        // Use fetch for JSON response handling
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        // Get CSRF token from meta tag or page props
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                         props.csrf_token || 
+                         window.Laravel?.csrfToken;
+        
+        console.log('CSRF Token:', csrfToken ? 'Found' : 'Not found');
+        console.log('Route:', route('admin.chatbot.message'));
+        
+        if (!csrfToken) {
+            console.error('CSRF token not found');
+            throw new Error('CSRF token not found');
+        }
         
         try {
             const response = await fetch(route('admin.chatbot.message'), {
@@ -49,12 +60,14 @@ export default function Create({ auth }) {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify({
                     message: userMessage,
                     session_id: sessionId
-                })
+                }),
+                credentials: 'same-origin'
             });
 
             if (!response.ok) {
@@ -105,6 +118,43 @@ export default function Create({ auth }) {
         });
     };
 
+    const loadConversationHistory = async (sessionIdToLoad) => {
+        try {
+            const response = await fetch(route('admin.chatbot.history', sessionIdToLoad));
+            if (response.ok) {
+                const history = await response.json();
+                const formattedHistory = history.map(conv => ([
+                    {
+                        id: `user-${conv.id}`,
+                        message: conv.user_message,
+                        type: 'user',
+                        timestamp: new Date(conv.created_at)
+                    },
+                    {
+                        id: `bot-${conv.id}`,
+                        message: conv.bot_response,
+                        type: 'bot',
+                        timestamp: new Date(conv.created_at),
+                        intent: conv.intent,
+                        confidence: conv.confidence_score
+                    }
+                ])).flat();
+                
+                setConversation(formattedHistory);
+                setSessionId(sessionIdToLoad);
+                setSelectedSession(sessionIdToLoad);
+            }
+        } catch (error) {
+            console.error('Error loading conversation history:', error);
+        }
+    };
+
+    const startNewConversation = () => {
+        setConversation([]);
+        setSessionId(null);
+        setSelectedSession(null);
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -128,8 +178,56 @@ export default function Create({ auth }) {
             <Head title="New Chatbot Conversation" />
 
             <div className="py-12">
-                <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                    <Card className="h-[600px] flex flex-col">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        {/* Conversation History Sidebar */}
+                        <div className="lg:col-span-1">
+                            <Card className="h-[600px] flex flex-col">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Your Conversations</CardTitle>
+                                    <Button 
+                                        onClick={startNewConversation}
+                                        className="w-full mt-2"
+                                        variant={!selectedSession ? "default" : "outline"}
+                                    >
+                                        <MessageSquare className="w-4 h-4 mr-2" />
+                                        New Chat
+                                    </Button>
+                                </CardHeader>
+                                <CardContent className="flex-1 overflow-y-auto p-4">
+                                    <div className="space-y-2">
+                                        {userConversations?.map((conv) => (
+                                            <button
+                                                key={conv.session_id}
+                                                onClick={() => loadConversationHistory(conv.session_id)}
+                                                className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                                                    selectedSession === conv.session_id 
+                                                        ? 'bg-blue-50 border-blue-200' 
+                                                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                                                }`}
+                                            >
+                                                <div className="text-sm font-medium text-gray-900 truncate">
+                                                    {conv.last_message?.substring(0, 30)}...
+                                                </div>
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    {conv.message_count} messages • {new Date(conv.created_at).toLocaleDateString()}
+                                                </div>
+                                            </button>
+                                        ))}
+                                        {(!userConversations || userConversations.length === 0) && (
+                                            <div className="text-center py-8 text-gray-500">
+                                                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                                <p className="text-sm">No conversations yet</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Chat Interface */}
+                        <div className="lg:col-span-3">
+                            <Card className="h-[600px] flex flex-col">
                         <CardHeader>
                             <div className="flex items-center space-x-3">
                                 <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
@@ -281,6 +379,8 @@ export default function Create({ auth }) {
                             </form>
                         </CardContent>
                     </Card>
+                        </div>
+                    </div>
                 </div>
             </div>
         </AuthenticatedLayout>

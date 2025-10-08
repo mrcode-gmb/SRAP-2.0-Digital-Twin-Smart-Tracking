@@ -16,43 +16,55 @@ class ChatbotController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ChatbotConversation::with('user')
-            ->orderBy('created_at', 'desc');
+        // For regular users, show only their conversations
+        // For admins, they can see all conversations if they access admin panel specifically
+        $userId = Auth::id();
+        
+        // Check if this is an admin accessing the admin panel
+        if (Auth::user()->role === 'admin' && $request->has('admin_view')) {
+            $query = ChatbotConversation::with('user')
+                ->orderBy('created_at', 'desc');
 
-        // Filter by user
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-
-        // Filter by session
-        if ($request->filled('session_id')) {
-            $query->where('session_id', $request->session_id);
-        }
-
-        // Filter by feedback
-        if ($request->filled('feedback')) {
-            if ($request->feedback === 'positive') {
-                $query->where('feedback_rating', '>=', 4);
-            } elseif ($request->feedback === 'negative') {
-                $query->where('feedback_rating', '<=', 2);
+            // Filter by user
+            if ($request->filled('user_id')) {
+                $query->where('user_id', $request->user_id);
             }
+
+            // Filter by session
+            if ($request->filled('session_id')) {
+                $query->where('session_id', $request->session_id);
+            }
+
+            // Filter by feedback
+            if ($request->filled('feedback')) {
+                if ($request->feedback === 'positive') {
+                    $query->where('feedback_rating', '>=', 4);
+                } elseif ($request->feedback === 'negative') {
+                    $query->where('feedback_rating', '<=', 2);
+                }
+            }
+
+            $conversations = $query->paginate(20)->withQueryString();
+
+            // Get statistics for admin
+            $stats = [
+                'total_conversations' => ChatbotConversation::count(),
+                'today_conversations' => ChatbotConversation::whereDate('created_at', today())->count(),
+                'avg_confidence' => ChatbotConversation::avg('confidence_score'),
+                'positive_feedback' => ChatbotConversation::where('is_helpful', true)->count()
+            ];
+
+            return Inertia::render('Admin/Chatbot', [
+                'conversations' => $conversations,
+                'stats' => $stats,
+                'filters' => $request->only(['user_id', 'session_id', 'feedback']),
+                'isAdminView' => true
+            ]);
+        } else {
+            // For regular users (including admins using personal chat), show only their conversations
+            // Redirect to the chat interface instead of showing conversation list
+            return redirect()->route('admin.chatbot.create');
         }
-
-        $conversations = $query->paginate(20)->withQueryString();
-
-        // Get statistics
-        $stats = [
-            'total_conversations' => ChatbotConversation::count(),
-            'today_conversations' => ChatbotConversation::whereDate('created_at', today())->count(),
-            'avg_confidence' => ChatbotConversation::avg('confidence_score'),
-            'positive_feedback' => ChatbotConversation::where('is_helpful', true)->count()
-        ];
-
-        return Inertia::render('Admin/Chatbot', [
-            'conversations' => $conversations,
-            'stats' => $stats,
-            'filters' => $request->only(['user_id', 'session_id', 'feedback'])
-        ]);
     }
 
     /**
@@ -60,7 +72,24 @@ class ChatbotController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Chatbot/Create');
+        // Get user's previous conversations grouped by session
+        $userConversations = ChatbotConversation::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('session_id')
+            ->map(function ($conversations) {
+                return [
+                    'session_id' => $conversations->first()->session_id,
+                    'last_message' => $conversations->first()->user_message,
+                    'created_at' => $conversations->first()->created_at,
+                    'message_count' => $conversations->count()
+                ];
+            })
+            ->values();
+
+        return Inertia::render('Admin/Chatbot/Create', [
+            'userConversations' => $userConversations
+        ]);
     }
 
     /**
@@ -104,7 +133,20 @@ class ChatbotController extends Controller
         ]);
 
 
-        return response()->json([
+        // Check if this is an AJAX/fetch request or Inertia request
+        if (request()->expectsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'message' => $response['message'],
+                'session_id' => $sessionId,
+                'intent' => $response['intent'],
+                'confidence' => $response['confidence'],
+                'type' => $response['type'],
+                'suggestions' => $response['suggestions'] ?? []
+            ]);
+        }
+        
+        // For Inertia requests, return back with the response data
+        return back()->with('chatbot_response', [
             'message' => $response['message'],
             'session_id' => $sessionId,
             'intent' => $response['intent'],
@@ -143,7 +185,9 @@ class ChatbotController extends Controller
             'session_id' => 'required|string'
         ]);
 
+        // Only allow users to access their own conversations
         $conversations = ChatbotConversation::where('session_id', $validated['session_id'])
+            ->where('user_id', Auth::id())
             ->orderBy('created_at')
             ->get();
 

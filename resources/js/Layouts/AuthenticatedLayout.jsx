@@ -62,6 +62,10 @@ function Sidebar({ isOpen, onClose, user }) {
         { name: 'Milestones', href: '/milestones', icon: Calendar },
         { name: 'SRAP Pillars', href: '/srap-pillars', icon: Layers },
         
+        // Chatbot - Available to all authenticated users
+        { name: 'AI Assistant', href: '/admin/chatbot', icon: MessageSquare },
+        { name: 'AI Testing', href: '/ai/chatbot', icon: Brain },
+        
         // Admin Features
         ...(user.role === 'admin' ? [
             { name: 'Alerts', href: '/admin/alerts', icon: AlertTriangle },
@@ -71,7 +75,6 @@ function Sidebar({ isOpen, onClose, user }) {
             { name: 'Scenarios', href: '/admin/scenarios', icon: BarChart3 },
             { name: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
             { name: 'AI Predictions', href: '/admin/ai-predictions', icon: Brain },
-            { name: 'Chatbot', href: '/admin/chatbot', icon: MessageSquare },
         ] : []),
         
         // Data Officer Features

@@ -1,23 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { motion } from 'framer-motion';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useToast } from '@/Contexts/ToastContext';
-import { 
-    Upload, 
-    FileText, 
-    Download, 
-    AlertCircle, 
-    CheckCircle, 
+import {
+    Upload,
+    Download,
+    AlertCircle,
+    CheckCircle,
     Clock,
-    Database,
     FileSpreadsheet,
     Target,
-    Calendar
+    Calendar,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/Card';
 import { Button } from '@/Components/ui/Button';
-import { Badge } from '@/Components/ui/Badge';
 
 export default function DataOfficerUpload({ auth }) {
     const { showSuccess, showError, showWarning } = useToast();
@@ -32,12 +28,19 @@ export default function DataOfficerUpload({ auth }) {
         overwrite_existing: false
     });
 
+    const { flash } = usePage().props;
+    useEffect(() => {
+        if (flash?.success) showSuccess(flash.success);
+        if (flash?.error) showError(flash.error);
+        if (flash?.warning) showWarning(flash.warning);
+    }, [flash, showSuccess, showError, showWarning]);
+
     const handleDrag = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (e.type === "dragenter" || e.type === "dragover") {
+        if (e.type === 'dragenter' || e.type === 'dragover') {
             setDragActive(true);
-        } else if (e.type === "dragleave") {
+        } else if (e.type === 'dragleave') {
             setDragActive(false);
         }
     };
@@ -46,7 +49,6 @@ export default function DataOfficerUpload({ auth }) {
         e.preventDefault();
         e.stopPropagation();
         setDragActive(false);
-        
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             handleFileSelect(e.dataTransfer.files[0]);
         }
@@ -57,19 +59,16 @@ export default function DataOfficerUpload({ auth }) {
             const allowedTypes = [
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'application/vnd.ms-excel',
-                'text/csv'
+                'text/csv',
             ];
-            
             if (!allowedTypes.includes(file.type)) {
                 showError('Please select an Excel (.xlsx, .xls) or CSV file');
                 return;
             }
-            
-            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            if (file.size > 10 * 1024 * 1024) {
                 showError('File size must be less than 10MB');
                 return;
             }
-            
             setData('file', file);
             showSuccess(`File "${file.name}" selected successfully`);
         }
@@ -77,18 +76,15 @@ export default function DataOfficerUpload({ auth }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
         if (!data.file) {
             showError('Please select a file to upload');
             return;
         }
-
         setIsUploading(true);
         setUploadProgress(0);
 
-        // Simulate upload progress
         const progressInterval = setInterval(() => {
-            setUploadProgress(prev => {
+            setUploadProgress((prev) => {
                 if (prev >= 90) {
                     clearInterval(progressInterval);
                     return prev;
@@ -98,23 +94,20 @@ export default function DataOfficerUpload({ auth }) {
         }, 200);
 
         post('/admin/progress-upload', {
-            onSuccess: (page) => {
+            onSuccess: () => {
                 clearInterval(progressInterval);
                 setUploadProgress(100);
-                showSuccess('File uploaded successfully! Awaiting HOD approval.');
+                // Allow server-side redirect to Show page
                 reset();
                 setIsUploading(false);
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                }
-                // Stay on the same page instead of redirecting
+                if (fileInputRef.current) fileInputRef.current.value = '';
             },
-            onError: (errors) => {
+            onError: () => {
                 clearInterval(progressInterval);
                 setUploadProgress(0);
                 setIsUploading(false);
                 showError('Upload failed. Please try again.');
-            }
+            },
         });
     };
 

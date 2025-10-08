@@ -83,6 +83,12 @@ class ProgressUploadController extends Controller
         try {
             DB::beginTransaction();
             
+            // Auto-detect type from file headers to prevent template mismatch
+            $detectedType = $this->detectFileTypeByHeaders($file);
+            if ($detectedType && $detectedType !== $type) {
+                $type = $detectedType;
+            }
+
             // Store file and create database record
             $uploadedFile = $this->storeUploadedFile($file, $type);
             
@@ -101,9 +107,9 @@ class ProgressUploadController extends Controller
             
             DB::commit();
             
-            return back()->with('success', 
-                "Upload completed successfully. {$results['success']} records processed, {$results['errors']} errors."
-            )->with('upload_results', $results);
+            return redirect()->route('admin.progress-upload.show', $uploadedFile->id)
+                ->with('success', "Upload completed successfully. {$results['success']} records processed, {$results['errors']} errors.")
+                ->with('upload_results', $results);
 
         } catch (\Exception $e) {
             
@@ -209,10 +215,18 @@ class ProgressUploadController extends Controller
         try {
             DB::beginTransaction();
 
+            // Auto-detect type from file headers to prevent template mismatch
+            $detectedType = $this->detectFileTypeByHeaders($file);
+            if ($detectedType && $detectedType !== $type) {
+                $type = $detectedType;
+            }
+
             $results = $this->processUploadedFile($file, $type, $overwriteExisting);
 
             DB::commit();
 
+            // Redirect to a show/details view if possible. Since 'upload' doesn't create an UploadedFile record,
+            // keep behavior consistent with store() by redirecting back with flash for now.
             return back()->with('success', 
                 "Upload completed successfully. {$results['success']} records processed, {$results['errors']} errors."
             )->with('upload_results', $results);
@@ -582,6 +596,41 @@ class ProgressUploadController extends Controller
             return ['KPI ID', 'Reporting Date', 'Current Value'];
         } else {
             return ['Milestone ID', 'Completion Percentage'];
+        }
+    }
+
+    /**
+     * Detect file type by inspecting header row
+     */
+    private function detectFileTypeByHeaders($file)
+    {
+        try {
+            $data = Excel::toArray([], $file)[0] ?? [];
+            if (empty($data)) {
+                return null;
+            }
+            $headers = $data[0] ?? [];
+            // Clean headers
+            $headers = array_filter(array_map('trim', $headers), function($h) {
+                return $h !== '' && $h !== null;
+            });
+
+            $kpiRequired = $this->getRequiredHeaders('kpi_progress');
+            $milRequired = $this->getRequiredHeaders('milestone_progress');
+
+            $hasKpi = empty(array_diff($kpiRequired, $headers));
+            $hasMil = empty(array_diff($milRequired, $headers));
+
+            if ($hasKpi && !$hasMil) {
+                return 'kpi_progress';
+            }
+            if ($hasMil && !$hasKpi) {
+                return 'milestone_progress';
+            }
+            // Ambiguous or no match
+            return null;
+        } catch (\Exception $e) {
+            return null;
         }
     }
 
